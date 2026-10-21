@@ -3,6 +3,9 @@
 > **Background document.** The current plan is [`PLAY_VERSION_PLAN.md`](PLAY_VERSION_PLAN.md).
 > This file was written before the Play version was decided, and some facts here are out of date:
 > the app is now v0.1 (versionCode 2), and `brand/play-store/` now has the 512 px icon and a feature graphic.
+> **Later decisions:** the app is Google Play only, and Pro is paid through Google Play Billing.
+> SSLCommerz, the separate "full" ad-blocking build and the GitHub/website distribution described
+> below were dropped. See `PLAY_VERSION_PLAN.md` sections 2–3 for why.
 
 Written 2026-10-21 for `elwyndraker/testing-guard` (`com.pg.privacyguard`, v0).
 Companion to `PLAY_STORE_PLAN.md` and `PLAY_VERSION_PLAN.md` (the step-by-step plan).
