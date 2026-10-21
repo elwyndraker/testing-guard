@@ -224,7 +224,7 @@ Words never to use in the Play build, listing or screenshots: ad, ads, adblock, 
 
 ### 5.1 Text
 - **Title (≤30):** `PrivacyGuard: Tracker Blocker` (29). Change if the name check finds a conflict.
-- **Short description (≤80):** `Block trackers, malware and phishing on your whole phone. No account needed.` (77)
+- **Short description (≤80):** `Block trackers, malware and phishing on your whole phone. No account needed.` (76)
 - **Full description (draft):**
 
 > PrivacyGuard blocks known trackers, malware and phishing sites in every app and browser on your phone.
