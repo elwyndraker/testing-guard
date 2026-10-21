@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 320" width="1120" height="320">
+  <defs>
+    <radialGradient id="bg" gradientUnits="userSpaceOnUse" cx="54" cy="48" r="62">
+      <stop offset="0" stop-color="#13604F"/>
+      <stop offset="1" stop-color="#062621"/>
+    </radialGradient>
+    <clipPath id="shield"><path d="M54,32 C60,35 66,36 71,36 V52 C71,63 63,71 54,75 C45,71 37,63 37,52 V36 C42,36 48,35 54,32 Z"/></clipPath>
+  </defs>
+  <rect x="-40" y="-40" width="1200" height="400" fill="#062621"/>
+  <clipPath id="r"><rect x="18" y="18" width="72" height="72" rx="16"/></clipPath>
+  <g transform="translate(-20,-20) scale(3.3333)" clip-path="url(#r)"><rect width="108" height="108" fill="url(#bg)"/><path d="M24,57 A30,8.8 0 0,1 84,57" transform="rotate(-14 54 57)" fill="none" stroke="#4DF0C6" stroke-width="2.4" stroke-linecap="round"/>
+  <g clip-path="url(#shield)"><path d="M0,0 H54 V53 H0 Z" fill="#2ED8A8"/><path d="M54,0 H108 V53 H54 Z" fill="#5CF0C8"/><path d="M0,53 H54 V108 H0 Z" fill="#14B98A"/><path d="M54,53 H108 V108 H54 Z" fill="#0C9A70"/>
+    <path d="M24,57 A30,8.8 0 0,0 84,57" transform="rotate(-14 54 57)" fill="none" stroke="#0A2F29" stroke-width="5.0"/>
+  </g>
+  <path d="M51.7,54.66 A5.2,5.2 0 1,1 56.3,54.66 L57.4,64 H50.6 Z" fill="#0A2F29"/>
+  <path d="M24,57 A30,8.8 0 0,0 84,57" transform="rotate(-14 54 57)" fill="none" stroke="#4DF0C6" stroke-width="2.4" stroke-linecap="round"/></g>
+  <text x="300" y="178" font-family="Adwaita Sans, Inter, Roboto, Helvetica, Arial, sans-serif" font-weight="700" font-size="112" fill="#FFFFFF">PrivacyGuard</text>
+  <text x="304" y="236" font-family="Adwaita Sans, Inter, Roboto, Helvetica, Arial, sans-serif" font-weight="500" font-size="40" fill="#4DF0C6">Ad and tracker blocker for Android</text>
+</svg>

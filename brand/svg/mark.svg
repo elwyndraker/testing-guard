@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="22 30 64 48" width="64" height="48">
+  <defs>
+    <radialGradient id="bg" gradientUnits="userSpaceOnUse" cx="54" cy="48" r="62">
+      <stop offset="0" stop-color="#13604F"/>
+      <stop offset="1" stop-color="#062621"/>
+    </radialGradient>
+    <clipPath id="shield"><path d="M54,32 C60,35 66,36 71,36 V52 C71,63 63,71 54,75 C45,71 37,63 37,52 V36 C42,36 48,35 54,32 Z"/></clipPath>
+  </defs>
+  <path d="M24,57 A30,8.8 0 0,1 84,57" transform="rotate(-14 54 57)" fill="none" stroke="#4DF0C6" stroke-width="2.4" stroke-linecap="round"/>
+  <g clip-path="url(#shield)"><path d="M0,0 H54 V53 H0 Z" fill="#2ED8A8"/><path d="M54,0 H108 V53 H54 Z" fill="#5CF0C8"/><path d="M0,53 H54 V108 H0 Z" fill="#14B98A"/><path d="M54,53 H108 V108 H54 Z" fill="#0C9A70"/>
+    <path d="M24,57 A30,8.8 0 0,0 84,57" transform="rotate(-14 54 57)" fill="none" stroke="#0A2F29" stroke-width="5.0"/>
+  </g>
+  <path d="M51.7,54.66 A5.2,5.2 0 1,1 56.3,54.66 L57.4,64 H50.6 Z" fill="#0A2F29"/>
+  <path d="M24,57 A30,8.8 0 0,0 84,57" transform="rotate(-14 54 57)" fill="none" stroke="#4DF0C6" stroke-width="2.4" stroke-linecap="round"/>
+</svg>
