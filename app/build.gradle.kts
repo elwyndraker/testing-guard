@@ -13,17 +13,17 @@ val keystore = Properties().apply {
 }
 
 android {
-    namespace = "com.diu.privacyguard"
+    namespace = "com.pg.privacyguard"
     compileSdk = 37
 
     defaultConfig {
         // Never change after the first Play upload.
-        applicationId = "com.diu.privacyguard"
+        applicationId = "com.pg.privacyguard"
         minSdk = 26
         targetSdk = 36
         // Raise versionCode by 1 before every Play upload.
-        versionCode = 4
-        versionName = "1.3"
+        versionCode = 1
+        versionName = "0"
     }
 
     signingConfigs {

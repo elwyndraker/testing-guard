@@ -12,7 +12,7 @@ Screenshots are from version 1.2 on an Android 17 emulator after browsing cnn.co
 
 ## Download
 
-**[Download the latest APK](https://github.com/elwyndraker/test-guard/releases/latest)**: open this link on your Android phone, tap `PrivacyGuard-v….apk` under **Assets**, then open the downloaded file to install. See [Install the app without Android Studio](#install-the-app-without-android-studio) for details.
+**[Download the latest APK](https://github.com/elwyndraker/testing-guard/releases/latest)**: open this link on your Android phone, tap `PrivacyGuard-v….apk` under **Assets**, then open the downloaded file to install. See [Install the app without Android Studio](#install-the-app-without-android-studio) for details.
 
 ## Contents
 
@@ -80,7 +80,7 @@ Key design choices:
 
 You don't need USB debugging or Developer options to try the app:
 
-1. Download the APK from the [latest release](https://github.com/elwyndraker/test-guard/releases/latest), or build it yourself (see below).
+1. Download the APK from the [latest release](https://github.com/elwyndraker/testing-guard/releases/latest), or build it yourself (see below).
 2. Copy the `.apk` file to the phone (USB file transfer, Google Drive, Telegram "Saved messages", email, …).
 3. Open the file on the phone with its file manager and tap **Install**. Android asks you to allow "Install unknown apps" for that file manager once; allow it.
 4. Open PrivacyGuard and turn the switch on.
@@ -115,13 +115,13 @@ On first start, the setup wizard downloads the Android SDK to `~/Android/Sdk`. A
 Then get the code:
 
 ```bash
-git clone https://github.com/elwyndraker/test-guard.git
-cd test-guard
+git clone https://github.com/elwyndraker/testing-guard.git
+cd testing-guard
 ```
 
 ### With Android Studio
 
-1. **File → Open** and choose the `test-guard` folder. Wait for the Gradle sync to finish.
+1. **File → Open** and choose the `testing-guard` folder. Wait for the Gradle sync to finish.
 2. Press **Run ▶** to install on a connected phone or an emulator.
 3. To get an APK file: **Build → Build App Bundle(s) / APK(s) → Build APK(s)**. The file appears at `app/build/outputs/apk/debug/app-debug.apk`.
 
@@ -284,7 +284,7 @@ Still to test on real phones: 30 minutes with the screen off, another VPN app ta
 app/src/main/
 ├── AndroidManifest.xml          permissions + the VPN service declaration
 ├── assets/hosts.txt             built-in copy of the anti-AD list (offline fallback)
-├── java/com/diu/privacyguard/
+├── java/com/pg/privacyguard/
 │   ├── MainActivity.kt          entry point, sets up Compose
 │   ├── BuildConfigInfo.kt       reads the app version for the About dialog
 │   ├── data/
@@ -339,7 +339,7 @@ Things that look odd but are deliberate:
 
 Before the first upload:
 
-1. The privacy policy is live at <https://elwyndraker.github.io/test-guard/> (GitHub Pages, from `docs/index.html`); the app links to it from the Filters screen.
+1. The privacy policy is live at <https://elwyndraker.github.io/testing-guard/> (GitHub Pages, from `docs/index.html`); the app links to it from the Filters screen.
 2. Build the bundle with `./gradlew bundleRelease` → `app/build/outputs/bundle/release/app-release.aab`, signed with the key described in [Release builds and signing](#release-builds-and-signing). Use that key as the Play upload key and keep it backed up.
 3. Raise `versionCode` in `app/build.gradle.kts` before every upload.
 

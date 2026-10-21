@@ -34,7 +34,7 @@
     <li><strong>Website lookups (DNS).</strong> When protection is on, PrivacyGuard uses Android's VpnService to create a local VPN on your phone. Only DNS lookups (the names of websites and services your apps contact) pass through it. Each name is checked against a blocklist on your phone. Blocked names are answered on the phone. Other lookups are forwarded unchanged to your network's normal DNS server, as your phone would do without the app. If that server cannot be found or does not respond quickly, the lookup is also sent to a public DNS service, Cloudflare (1.1.1.1) or Google (8.8.8.8), which handles it under its own privacy policy (<a href="https://www.cloudflare.com/privacypolicy/">Cloudflare</a>, <a href="https://developers.google.com/speed/public-dns/privacy">Google</a>).</li>
     <li><strong>Page content.</strong> Web pages, videos and other traffic do not pass through PrivacyGuard.</li>
     <li><strong>Blocked-requests list.</strong> The list of blocked names is kept in the phone's memory only, never saved to a server, and is cleared when the app is closed.</li>
-    <li><strong>Blocklist updates.</strong> The app downloads public blocklists (<a href="https://github.com/elwyndraker/test-guard#blocklist-sources">full list</a>) from the servers that publish them: GitHub (raw.githubusercontent.com), GitLab (gitlab.com), easylist-downloads.adblockplus.org, hblock.molinero.dev, www.github.developerdan.com and hosts.flossboxin.org.in. Like any download, each server receives your IP address for that request. Nothing else is sent.</li>
+    <li><strong>Blocklist updates.</strong> The app downloads public blocklists (<a href="https://github.com/elwyndraker/testing-guard#blocklist-sources">full list</a>) from the servers that publish them: GitHub (raw.githubusercontent.com), GitLab (gitlab.com), easylist-downloads.adblockplus.org, hblock.molinero.dev, www.github.developerdan.com and hosts.flossboxin.org.in. Like any download, each server receives your IP address for that request. Nothing else is sent.</li>
     <li><strong>App updates.</strong> If the app was installed from Google Play, it asks the Play Store app on your phone whether a newer version exists, using Google's in-app updates library. Updates are downloaded and installed by Google Play under <a href="https://policies.google.com/privacy">Google's privacy policy</a>.</li>
     <li><strong>Settings.</strong> Whether protection is on and when the list was last updated are stored on your phone only.</li>
   </ul>
@@ -56,7 +56,7 @@
   <p>If this policy changes, the new version will be posted on this page with a new effective date.</p>
 
   <h2>Contact</h2>
-  <p>Questions about this policy: open an issue at <a href="https://github.com/elwyndraker/test-guard/issues">github.com/elwyndraker/test-guard/issues</a>.</p>
+  <p>Questions about this policy: open an issue at <a href="https://github.com/elwyndraker/testing-guard/issues">github.com/elwyndraker/testing-guard/issues</a>.</p>
 </main>
 </body>
 </html>
