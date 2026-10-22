@@ -27,6 +27,8 @@ object Blocklist {
         "https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-domains.txt",
         "https://raw.githubusercontent.com/AdroitAdorKhan/antipopads-re/master/formats/domains.txt",
         "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/pro.txt",
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/tif.mini-onlydomains.txt",
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/fake-onlydomains.txt",
         "https://easylist-downloads.adblockplus.org/easyprivacy.txt",
         "https://hblock.molinero.dev/hosts_domains.txt",
         "https://raw.githubusercontent.com/rentianyu/Ad-set-hosts/master/hosts",

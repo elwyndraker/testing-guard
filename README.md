@@ -33,7 +33,7 @@ Screenshots are from version 1.2 on an Android 17 emulator after browsing cnn.co
 
 | Feature | Where |
 | --- | --- |
-| Blocks about 1 million ad and tracker domains, merged from [17 public lists](#blocklist-sources), in every app and browser | Runs in the background as a local VPN |
+| Blocks about 1.1 million ad, tracker and scam domains, merged from [19 public lists](#blocklist-sources), in every app and browser | Runs in the background as a local VPN |
 | One switch to turn protection on and off, plus a "blocked today" counter | **Home** screen |
 | Live list of blocked domains, newest first; repeats are grouped ("Blocked 4 times") | **Blocked** screen |
 | Blocklist update on demand, automatically when older than 7 days, and right after an app update that changes the sources | **Filters** screen |
@@ -370,6 +370,8 @@ The app downloads and merges these lists (see `Blocklist.SOURCES`). Each list ke
 | [privacy-protection-tools/anti-AD](https://github.com/privacy-protection-tools/anti-AD) | domains |
 | [AdroitAdorKhan/antipopads-re](https://github.com/AdroitAdorKhan/antipopads-re) | domains |
 | [hagezi/dns-blocklists](https://github.com/hagezi/dns-blocklists) (Pro, wildcard) | wildcard |
+| [hagezi/dns-blocklists](https://github.com/hagezi/dns-blocklists) (Threat Intelligence Feeds mini) | domains |
+| [hagezi/dns-blocklists](https://github.com/hagezi/dns-blocklists) (Fake) | domains |
 | [EasyPrivacy](https://easylist.to/) | adblock (domain rules only) |
 | [hBlock](https://hblock.molinero.dev/) | domains |
 | [rentianyu/Ad-set-hosts](https://github.com/rentianyu/Ad-set-hosts) | hosts |
