@@ -15,5 +15,5 @@
   <path d="M51.7,54.66 A5.2,5.2 0 1,1 56.3,54.66 L57.4,64 H50.6 Z" fill="#0A2F29"/>
   <path d="M24,57 A30,8.8 0 0,0 84,57" transform="rotate(-14 54 57)" fill="none" stroke="#4DF0C6" stroke-width="2.4" stroke-linecap="round"/></g>
   <text x="300" y="178" font-family="Adwaita Sans, Inter, Roboto, Helvetica, Arial, sans-serif" font-weight="700" font-size="112" fill="#FFFFFF">PrivacyGuard</text>
-  <text x="304" y="236" font-family="Adwaita Sans, Inter, Roboto, Helvetica, Arial, sans-serif" font-weight="500" font-size="40" fill="#4DF0C6">Ad and tracker blocker for Android</text>
+  <text x="304" y="236" font-family="Adwaita Sans, Inter, Roboto, Helvetica, Arial, sans-serif" font-weight="500" font-size="40" fill="#4DF0C6">Tracker and malware blocker for Android</text>
 </svg>

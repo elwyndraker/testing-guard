@@ -24,15 +24,16 @@ data class UpdateResult(val failed: Int, val total: Int)
  */
 object Blocklist {
     /**
-     * An ads-only list. Its domains are removed from every downloaded filter, so the app
-     * provably never blocks ad delivery (Google Play doesn't allow a VPN app to block ads).
+     * Domains on this list are removed from every downloaded filter and are never blocked.
+     * Google Play doesn't allow a VPN app to interfere with how other apps and websites earn
+     * money; this list covers those domains, so PrivacyGuard stays a privacy and security filter.
      */
-    const val ADS_EXCLUSION_SOURCE = "https://easylist.to/easylist/easylist.txt"
+    const val EXCLUSION_SOURCE = "https://easylist.to/easylist/easylist.txt"
 
     private const val DIR = "lists"
     private const val ASSET = "standard.txt"
 
-    // Older versions saved one merged list that included ads lists; it must never be loaded again.
+    // Older versions saved one merged list built from other sources; it must never be loaded again.
     private const val LEGACY_FILE = "hosts.txt"
 
     // Below this, the exclusion list download is broken and the update can't prove anything.
@@ -60,7 +61,7 @@ object Blocklist {
     val size: StateFlow<Int> = _size
 
     /** Identifies every source, so an app update that changes them triggers a fresh download. */
-    val sourcesHash: Int get() = (Filter.entries.map { it.sources } + listOf(ADS_EXCLUSION_SOURCE)).hashCode()
+    val sourcesHash: Int get() = (Filter.entries.map { it.sources } + listOf(EXCLUSION_SOURCE)).hashCode()
 
     /**
      * The filter that blocks [name] or one of its parents, or null if it is allowed. The
@@ -117,15 +118,15 @@ object Blocklist {
 
     /**
      * Downloads [filters] and saves each one. Sources that fail are skipped; a filter whose
-     * download looks broken keeps its old list. Throws IOException if the ads exclusion list or
+     * download looks broken keeps its old list. Throws IOException if the exclusion list or
      * the standard list can't be downloaded, and then nothing changes.
      */
     suspend fun update(context: Context, filters: List<Filter> = filtersToUpdate()): UpdateResult =
         withContext(Dispatchers.IO) {
             mutex.withLock {
-                val excluded = DomainSet.Builder().also { download(ADS_EXCLUSION_SOURCE, it, null) }.build()
+                val excluded = DomainSet.Builder().also { download(EXCLUSION_SOURCE, it, null) }.build()
                 if (excluded.size < MIN_EXCLUDED) {
-                    throw IOException("the ads exclusion list looks incomplete (${excluded.size} domains)")
+                    throw IOException("the exclusion list looks incomplete (${excluded.size} domains)")
                 }
 
                 var failed = 0
@@ -243,18 +244,19 @@ object Blocklist {
 
     /**
      * Understands the common list formats, one rule per line:
-     * hosts files ("0.0.0.0 ads.example.com", also 127.0.0.1 and ::), plain domains
-     * ("ads.example.com"), wildcards ("*.ads.example.com") and adblock domain rules
-     * ("||ads.example.com^"). Other adblock rules (paths, options, element hiding, exceptions)
+     * hosts files ("0.0.0.0 tracker.example.com", also 127.0.0.1 and ::), plain domains
+     * ("tracker.example.com"), wildcards ("*.tracker.example.com") and filter-rule domain rules
+     * ("||tracker.example.com^"). Other filter rules (paths, options, element hiding, exceptions)
      * can't be applied to DNS and are skipped, as are comments, IP addresses and localhost.
      * Names in [excluded], or under a name in it, are skipped too.
      */
     internal fun parse(lines: Sequence<String>, into: DomainSet.Builder, excluded: DomainSet? = null) {
-        // In an adblock list a bare word like "ad-banner.js" is a URL pattern, not a domain.
-        var adblock = false
+        // In a filter-rule list a bare word like "banner.js" is a URL pattern, not a domain.
+        // Such lists start with a "[...]" header line or use "||domain^" rules.
+        var filterRules = false
         for (raw in lines) {
             val line = raw.removePrefix("\uFEFF").trim()
-            if (line.startsWith("[Adblock") || line.startsWith("||")) adblock = true
+            if (line.startsWith("[") || line.startsWith("||")) filterRules = true
             if (line.isEmpty() || line[0] == '!' || line[0] == '[') continue
             if ("##" in line || "#@#" in line || "#?#" in line || "#$#" in line) continue
             val parts = line.substringBefore('#').trim().split(SPACES)
@@ -266,7 +268,7 @@ object Blocklist {
                 when {
                     rule.startsWith("||") ->
                         if (rule.endsWith("^")) addIfDomain(rule.substring(2, rule.length - 1), into, excluded)
-                    adblock -> {}
+                    filterRules -> {}
                     rule.startsWith("*.") -> addIfDomain(rule.substring(2), into, excluded)
                     else -> addIfDomain(rule, into, excluded)
                 }

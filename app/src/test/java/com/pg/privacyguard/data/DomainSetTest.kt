@@ -23,12 +23,12 @@ class DomainSetTest {
 
     @Test
     fun checksSuffixFromStartIndex() {
-        val set = DomainSet.Builder().apply { add("doubleclick.net") }.build()
-        assertTrue(set.contains("stats.g.doubleclick.net", 8))
-        assertTrue(set.contains("DoubleClick.Net"))
-        assertFalse(set.contains("stats.g.doubleclick.net", 7))
-        assertFalse(set.contains("doubleclick.net", 15))
-        assertFalse(DomainSet.EMPTY.contains("doubleclick.net"))
+        val set = DomainSet.Builder().apply { add("tracker.net") }.build()
+        assertTrue(set.contains("stats.g.tracker.net", 8))
+        assertTrue(set.contains("Tracker.Net"))
+        assertFalse(set.contains("stats.g.tracker.net", 7))
+        assertFalse(set.contains("tracker.net", 11))
+        assertFalse(DomainSet.EMPTY.contains("tracker.net"))
     }
 
     @Test

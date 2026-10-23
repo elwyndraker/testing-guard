@@ -21,7 +21,7 @@ It needs Python 3 with PyGObject (librsvg and pycairo) and Pillow. On Fedora: `s
 
 The Play icon is a plain square on purpose. Google Play rounds the corners and adds the shadow itself, so the file must not have its own rounded corners, shadow or padding. The shield and ring sit well inside the center, so nothing is cut off by the rounding.
 
-Phone screenshots are not generated here. Use the real screenshots in [`../screenshots`](../screenshots). Play needs at least 2, between 320 px and 3840 px on each side, with the long side no more than twice the short side.
+Phone screenshots are not generated here. Take them on a phone and save them in `play-store/screenshots/` (see [`../play-store/listing.md`](../play-store/listing.md)). Play needs at least 2, between 320 px and 3840 px on each side, with the long side no more than twice the short side.
 
 ## In the app
 

@@ -2,6 +2,7 @@ package com.pg.privacyguard.data
 
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import com.pg.privacyguard.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -9,7 +10,7 @@ import kotlinx.coroutines.flow.first
 /**
  * Whether Pro is unlocked. Google Play decides (see billing/Billing.kt); the last answer is
  * saved on the phone so Pro filters keep working offline and when the VPN starts without the app.
- * Debug builds always have Pro, so its features can be tested without a Play purchase.
+ * Debug and beta (tester) builds always have Pro, so its features can be tested without a Play purchase.
  */
 object Pro {
     const val PRODUCT_ID = "pro_unlock"
@@ -23,13 +24,13 @@ object Pro {
     /** Reads the saved status once. */
     suspend fun load(context: Context) {
         if (loaded) return
-        _active.value = isDebugBuild(context) || Settings.pro(context).first()
+        _active.value = alwaysPro(context) || Settings.pro(context).first()
         loaded = true
     }
 
     /** Called with Google Play's answer. */
     suspend fun set(context: Context, pro: Boolean) {
-        val value = pro || isDebugBuild(context)
+        val value = pro || alwaysPro(context)
         _active.value = value
         loaded = true
         Settings.setPro(context, pro)
@@ -40,6 +41,7 @@ object Pro {
         loaded = true
     }
 
-    private fun isDebugBuild(context: Context) =
-        context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+    private fun alwaysPro(context: Context) =
+        context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0 ||
+            context.resources.getBoolean(R.bool.pro_for_testers)
 }

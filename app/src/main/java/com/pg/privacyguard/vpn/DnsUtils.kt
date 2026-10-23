@@ -5,7 +5,7 @@ object DnsUtils {
     private const val HEADER_SIZE = 12
 
     /**
-     * Reads the first question's name, e.g. "ads.example.com".
+     * Reads the first question's name, e.g. "tracker.example.com".
      * Returns the name and the index where the question ends, or null if the message is not a
      * normal query. Names are stored as length-prefixed labels: [3]www[7]example[3]com[0].
      */

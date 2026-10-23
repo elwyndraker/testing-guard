@@ -36,8 +36,8 @@ class PacketUtilsTest {
 
     @Test
     fun readsDomainFromQuery() {
-        val query = PacketUtils.parseDnsQuery(ipPacket(dnsQuery("Ads.Example.com")))!!
-        assertEquals("ads.example.com", query.domain)
+        val query = PacketUtils.parseDnsQuery(ipPacket(dnsQuery("Telemetry.Example.com")))!!
+        assertEquals("telemetry.example.com", query.domain)
         assertEquals(20, query.ipHeaderLength)
         assertEquals(query.dns.size, query.questionEnd)
     }
@@ -51,7 +51,7 @@ class PacketUtilsTest {
 
     @Test
     fun responseSwapsAddressesAndPorts() {
-        val packet = ipPacket(dnsQuery("doubleclick.net"))
+        val packet = ipPacket(dnsQuery("tracker.example.net"))
         val query = PacketUtils.parseDnsQuery(packet)!!
         val answer = DnsUtils.nxdomain(query.dns, query.questionEnd)
         val response = PacketUtils.buildResponse(packet, query.ipHeaderLength, answer)

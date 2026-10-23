@@ -128,7 +128,7 @@ def lockup_svg(dark):
   <clipPath id="r"><rect x="18" y="18" width="72" height="72" rx="16"/></clipPath>
   <g transform="translate(-20,-20) scale(3.3333)" clip-path="url(#r)">{svg_background()}{svg_foreground()}</g>
   <text x="300" y="178" font-family="Adwaita Sans, Inter, Roboto, Helvetica, Arial, sans-serif" font-weight="700" font-size="112" fill="{text}">PrivacyGuard</text>
-  <text x="304" y="236" font-family="Adwaita Sans, Inter, Roboto, Helvetica, Arial, sans-serif" font-weight="500" font-size="40" fill="{sub}">Ad and tracker blocker for Android</text>
+  <text x="304" y="236" font-family="Adwaita Sans, Inter, Roboto, Helvetica, Arial, sans-serif" font-weight="500" font-size="40" fill="{sub}">Tracker and malware blocker for Android</text>
 </svg>
 """
 
@@ -149,6 +149,84 @@ def feature_graphic_svg():
   <text x="502" y="290" font-family="{font}" font-weight="500" font-size="32" fill="{ORBIT}">Block trackers and scams</text>
   <text x="502" y="330" font-family="{font}" font-weight="500" font-size="32" fill="{ORBIT}">on your whole phone</text>
   <text x="502" y="388" font-family="{font}" font-weight="400" font-size="22" fill="#9FD9C8">No root · No account · Nothing leaves your phone</text>
+</svg>
+"""
+
+
+def readme_overview_svg(dark):
+    """The picture at the top of the README: how a lookup is checked, and what is blocked."""
+    font = "Adwaita Sans, Inter, Roboto, Helvetica, Arial, sans-serif"
+    if dark:
+        bg, card, border, text, muted, accent = "#0D1117", "#161B22", "#30363D", "#E6EDF3", "#9198A1", ORBIT
+    else:
+        bg, card, border, text, muted, accent = "#FFFFFF", "#F6F8FA", "#D1D9E0", "#1F2328", "#59636E", FACET_BR
+
+    def box(x, y, w, h):
+        return f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="14" fill="{card}" stroke="{border}"/>'
+
+    def label(x, y, s, size=18, weight=400, fill=None, anchor="start"):
+        return (f'<text x="{x}" y="{y}" font-family="{font}" font-size="{size}" font-weight="{weight}" '
+                f'fill="{fill or text}" text-anchor="{anchor}">{s}</text>')
+
+    parts = [
+        f'<rect width="1200" height="600" rx="16" fill="{bg}" stroke="{border}"/>',
+        f'<g transform="translate(40,34) scale(0.9)"><clipPath id="r"><rect x="18" y="18" width="72" height="72" rx="16"/></clipPath>'
+        f'<g transform="translate(-18,-18)" clip-path="url(#r)">{svg_background()}{svg_foreground()}</g></g>',
+        label(128, 76, "PrivacyGuard", 40, 700, accent),
+        label(130, 108, "On-device content blocker for privacy and security", 20, 400, muted),
+    ]
+
+    # Left: what happens to one lookup
+    steps = [
+        ("1", "An app looks up", "a website name"),
+        ("2", "It's checked on", "your phone"),
+        ("3", "Threats blocked,", "the rest works"),
+    ]
+    for i, (n, line1, line2) in enumerate(steps):
+        x = 48 + i * 232
+        parts.append(box(x, 170, 196, 170))
+        parts.append(f'<circle cx="{x + 40}" cy="{214}" r="20" fill="{accent}"/>')
+        parts.append(label(x + 40, 221, n, 20, 700, bg, "middle"))
+        parts.append(label(x + 22, 282, line1, 18, 600))
+        parts.append(label(x + 22, 310, line2, 17, 400, muted))
+        if i < 2:
+            ax = x + 204
+            parts.append(f'<path d="M{ax},255 H{ax + 20} M{ax + 13},248 L{ax + 20},255 L{ax + 13},262" '
+                         f'stroke="{muted}" stroke-width="2.5" fill="none" stroke-linecap="round"/>')
+    parts.append(label(48, 400, "Only DNS lookups pass through the local VPN.", 18, 400, muted))
+    parts.append(label(48, 428, "Web pages, videos and downloads never do.", 18, 400, muted))
+
+    # Right: what is blocked
+    parts.append(box(756, 150, 400, 330))
+
+    def chips(title, y, items):
+        out = [label(780, y, title, 16, 700, muted)]
+        for i, (name, color) in enumerate(items):
+            cx = 778 + (i % 2) * 186
+            cy = y + 14 + (i // 2) * 48
+            out.append(f'<rect x="{cx}" y="{cy}" width="178" height="38" rx="9" fill="{bg}" stroke="{border}"/>')
+            out.append(f'<circle cx="{cx + 20}" cy="{cy + 19}" r="6" fill="{color}"/>')
+            out.append(label(cx + 36, cy + 25, name, 16, 500))
+        return out
+
+    parts += chips("FREE · ALWAYS ON", 184, [
+        ("Trackers", "#4DA3FF"), ("Phone telemetry", "#A07CFF"),
+        ("Malware", "#FF6B6B"), ("Phishing &amp; scams", "#FFB347"),
+    ])
+    parts += chips("PRO · ONE-TIME PURCHASE", 316, [
+        ("Adult content", "#F778BA"), ("Gambling", "#E3B341"),
+        ("Filter bypass", "#3FB9D6"), ("New domains", "#56D364"),
+        ("Cryptojacking", "#FF9A52"), ("Stalkerware", "#D2A8FF"),
+    ])
+
+    # Bottom strip
+    parts.append(f'<line x1="40" y1="524" x2="1160" y2="524" stroke="{border}"/>')
+    parts.append(label(600, 564, "No root  ·  No account  ·  No server  ·  Nothing leaves your phone", 20, 500, accent, "middle"))
+
+    body = "\n  ".join(parts)
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600">
+  {svg_defs()}
+  {body}
 </svg>
 """
 
@@ -305,6 +383,10 @@ def main():
         save(render(mono_svg(WHITE), px, round(px * 48 / 64)), f"logo/mark-white-{px}.png")
     save(render(lockup_svg(dark=True), 1120, 320), "logo/lockup-dark.png", opaque=True)
     save(render(lockup_svg(dark=False), 1120, 320), "logo/lockup-light.png")
+
+    # README overview picture, one per GitHub theme
+    for theme in ("dark", "light"):
+        save(render(readme_overview_svg(theme == "dark"), 2400, 1200), f"readme/overview-{theme}.png")
 
     # Web: favicons and PWA icons for the GitHub Pages site
     for px in (16, 32, 48, 192, 512):

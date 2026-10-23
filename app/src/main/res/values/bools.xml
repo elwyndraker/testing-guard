@@ -1,0 +1,4 @@
+<resources>
+    <!-- True only in the beta (tester) build (app/src/beta/res/values/bools.xml). -->
+    <bool name="pro_for_testers">false</bool>
+</resources>

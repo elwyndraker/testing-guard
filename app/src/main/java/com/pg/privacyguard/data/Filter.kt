@@ -6,8 +6,9 @@ private const val HAGEZI = "https://raw.githubusercontent.com/hagezi/dns-blockli
  * One group of blocklists that is saved, loaded and switched on or off as a whole.
  * [STANDARD] is free and always on; the others are Pro filters the user turns on.
  *
- * Never add an ads list here: Google Play doesn't allow a VPN app to block ads.
- * Hosts files, plain domain lists and adblock lists all work (see [Blocklist.parse]).
+ * Only privacy and security lists belong here (see [Blocklist.EXCLUSION_SOURCE]); a new
+ * source must also be added to BlocklistFiltersTest.APPROVED_SOURCES.
+ * Hosts files, plain domain lists and filter-rule lists all work (see [Blocklist.parse]).
  */
 enum class Filter(
     val fileName: String,
@@ -20,7 +21,7 @@ enum class Filter(
     STANDARD(
         "standard", pro = false, minDomains = 10_000,
         listOf(
-            "https://easylist-downloads.adblockplus.org/easyprivacy.txt",
+            "https://easylist.to/easylist/easyprivacy.txt",
             "https://raw.githubusercontent.com/r-a-y/mobile-hosts/master/AdguardMobileSpyware.txt",
             "https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.2o7Net/hosts",
             "https://gitlab.com/quidsup/notrack-blocklists/-/raw/master/trackers.list",

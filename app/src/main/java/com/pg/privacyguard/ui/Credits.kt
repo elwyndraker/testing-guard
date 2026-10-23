@@ -18,12 +18,12 @@ import androidx.compose.ui.unit.dp
 import com.pg.privacyguard.R
 import com.pg.privacyguard.data.Filter
 
-/** A blocklist project, for the credits screen. Keep in step with [Filter] and Blocklist.ADS_EXCLUSION_SOURCE. */
+/** A blocklist project, for the credits screen. Keep in step with [Filter] and Blocklist.EXCLUSION_SOURCE. */
 private data class Credit(val name: String, val license: String, val url: String)
 
 private val CREDITS = listOf(
     Credit("EasyPrivacy", "GPL-3.0 / CC BY-SA 3.0", "https://easylist.to/"),
-    Credit("EasyList (used only to remove ads domains from the other lists)", "GPL-3.0 / CC BY-SA 3.0", "https://easylist.to/"),
+    Credit("EasyList (used only as an exclusion list; nothing on it is blocked)", "GPL-3.0 / CC BY-SA 3.0", "https://easylist.to/"),
     Credit("r-a-y/mobile-hosts (AdguardMobileSpyware)", "GPL-3.0", "https://github.com/r-a-y/mobile-hosts"),
     Credit("FadeMind/hosts.extras (add.2o7Net)", "MIT", "https://github.com/FadeMind/hosts.extras"),
     Credit("NoTrack trackers", "GPL-3.0", "https://gitlab.com/quidsup/notrack-blocklists"),
@@ -33,7 +33,7 @@ private val CREDITS = listOf(
         "https://github.com/hagezi/dns-blocklists",
     ),
     Credit("HaGeZi NRD (newly registered domains)", "GPL-3.0", "https://github.com/hagezi/nrd"),
-    Credit("NoCoin adblock list", "MIT", "https://github.com/hoshsadiq/adblock-nocoin-list"),
+    Credit("NoCoin list", "MIT", "https://github.com/hoshsadiq/adblock-nocoin-list"),
     Credit("Echap stalkerware indicators", "CC BY 4.0", "https://github.com/AssoEchap/stalkerware-indicators"),
 )
 

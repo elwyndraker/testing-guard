@@ -13,8 +13,8 @@ class BlocklistTest {
         # Title: example hosts file
         127.0.0.1 localhost
         0.0.0.0 0.0.0.0
-        0.0.0.0 doubleclick.net
-        0.0.0.0	ads.Example.com   # inline comment
+        0.0.0.0 metrics.example.net
+        0.0.0.0	telemetry.Example.com   # inline comment
           0.0.0.0 tracker.test
         ::1 localhost
     """.trimIndent()
@@ -28,7 +28,7 @@ class BlocklistTest {
 
     @Test
     fun parsesOnlyBlockedDomains() {
-        assertDomains(setOf("doubleclick.net", "ads.example.com", "tracker.test"), parse(sample))
+        assertDomains(setOf("metrics.example.net", "telemetry.example.com", "tracker.test"), parse(sample))
     }
 
     @Test
@@ -36,8 +36,8 @@ class BlocklistTest {
         val text = """
             ${"﻿"}# GoodbyeAds
             127.0.0.1 localhost.localdomain
-            127.0.0.1 ads.one.com
-            :: ads.two.com
+            127.0.0.1 t.one.com
+            :: t.two.com
             0.0.0.0 a.three.com b.three.com
             255.255.255.255 broadcasthost
             fe80::1%lo0 localhost
@@ -45,7 +45,7 @@ class BlocklistTest {
             0.0.0.0 1.2.3.4
         """.trimIndent()
         assertDomains(
-            setOf("ads.one.com", "ads.two.com", "a.three.com", "b.three.com"),
+            setOf("t.one.com", "t.two.com", "a.three.com", "b.three.com"),
             parse(text),
         )
     }
@@ -66,26 +66,26 @@ class BlocklistTest {
     }
 
     @Test
-    fun parsesOnlyDomainRulesFromAdblockLists() {
+    fun parsesOnlyDomainRulesFromFilterRuleLists() {
         val text = """
-            [Adblock Plus 2.0]
+            [Filter list 2.0]
             ! Title: EasyPrivacy
             ||tracker.example.com^
             ||third.example.com^${'$'}third-party
             ||example.com/path^
             @@||allowed.example.com^
-            example.com##.ad-banner
-            ad-banner.js
-            *-ad.sm.cn*
+            example.com##.banner
+            banner.js
+            *-track.sm.cn*
         """.trimIndent()
         assertDomains(setOf("tracker.example.com"), parse(text))
     }
 
     @Test
     fun skipsExcludedDomainsAndTheirSubdomains() {
-        val excluded = parse("||doubleclick.net^\n||ads.example.org^")
+        val excluded = parse("||metrics.example.net^\n||telemetry.example.org^")
         val set = Blocklist.parse(
-            "stats.g.doubleclick.net\ndoubleclick.net\nads.example.org\nexample.org\ntracker.test".lineSequence(),
+            "stats.g.metrics.example.net\nmetrics.example.net\ntelemetry.example.org\nexample.org\ntracker.test".lineSequence(),
             excluded,
         )
         assertDomains(setOf("example.org", "tracker.test"), set)
@@ -94,12 +94,12 @@ class BlocklistTest {
     @Test
     fun blocksSubdomainsButNotParents() {
         Blocklist.setForTest(mapOf(Filter.STANDARD to parse(sample)))
-        assertTrue(Blocklist.isBlocked("doubleclick.net"))
-        assertTrue(Blocklist.isBlocked("stats.g.doubleclick.net"))
-        assertTrue(Blocklist.isBlocked("ads.example.com"))
-        assertTrue(Blocklist.isBlocked("Stats.DoubleClick.NET"))
+        assertTrue(Blocklist.isBlocked("metrics.example.net"))
+        assertTrue(Blocklist.isBlocked("stats.g.metrics.example.net"))
+        assertTrue(Blocklist.isBlocked("telemetry.example.com"))
+        assertTrue(Blocklist.isBlocked("Stats.Metrics.Example.NET"))
         assertFalse(Blocklist.isBlocked("example.com"))
-        assertFalse(Blocklist.isBlocked("notdoubleclick.net"))
+        assertFalse(Blocklist.isBlocked("notmetrics.example.net"))
         assertFalse(Blocklist.isBlocked(""))
     }
 }
@@ -159,23 +159,41 @@ class BlocklistFiltersTest {
     }
 
     @Test
-    fun noAdsListsInSources() {
-        // Lists the first version merged that are ads or mixed ads/tracker lists. Google Play
-        // doesn't allow a VPN app to block ads, so none may come back.
-        val adsLists = listOf(
-            "jdlingyu/ad-wars", "anti-AD", "antipopads", "dns-blocklists/main/wildcard/pro.txt",
-            "hblock", "Ad-set-hosts", "AWAvenue-Ads-Rule", "GoodbyeAds", "ads-and-tracking",
-            "notracking/hosts-blocklists", "flossboxin", "CombinedPrivacyBlockLists", "indianlist",
-            "easylist.txt",
-        )
+    fun onlyApprovedSources() {
+        // Every list is reviewed before it's added: privacy and security lists only. Google Play
+        // doesn't allow a VPN app to interfere with how other apps earn money.
         for (filter in Filter.entries) for (url in filter.sources) {
-            for (ads in adsLists) assertFalse("$url is an ads list", url.contains(ads, ignoreCase = true))
+            assertTrue("$url isn't approved; review it, then add it to APPROVED_SOURCES", url in APPROVED_SOURCES)
         }
-        assertTrue(Blocklist.ADS_EXCLUSION_SOURCE.endsWith("easylist.txt"))
+        assertEquals("https://easylist.to/easylist/easylist.txt", Blocklist.EXCLUSION_SOURCE)
+        for (filter in Filter.entries) assertFalse(Blocklist.EXCLUSION_SOURCE in filter.sources)
     }
 
     @Test
     fun standardIsTheOnlyFreeFilter() {
         assertEquals(listOf(Filter.STANDARD), Filter.entries.filter { !it.pro })
+    }
+
+    companion object {
+        /** The reviewed privacy and security lists. A new source in [Filter] must be added here too. */
+        val APPROVED_SOURCES = setOf(
+            "https://easylist.to/easylist/easyprivacy.txt",
+            "https://raw.githubusercontent.com/r-a-y/mobile-hosts/master/AdguardMobileSpyware.txt",
+            "https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.2o7Net/hosts",
+            "https://gitlab.com/quidsup/notrack-blocklists/-/raw/master/trackers.list",
+            "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.xiaomi-onlydomains.txt",
+            "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.samsung-onlydomains.txt",
+            "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.huawei-onlydomains.txt",
+            "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.oppo-realme-onlydomains.txt",
+            "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.vivo-onlydomains.txt",
+            "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/tif.mini-onlydomains.txt",
+            "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/fake-onlydomains.txt",
+            "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/nsfw-onlydomains.txt",
+            "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/gambling.medium-onlydomains.txt",
+            "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/doh-vpn-proxy-bypass-onlydomains.txt",
+            "https://cdn.jsdelivr.net/gh/hagezi/nrd@latest/domains/dga7.txt",
+            "https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt",
+            "https://raw.githubusercontent.com/AssoEchap/stalkerware-indicators/master/generated/hosts",
+        )
     }
 }

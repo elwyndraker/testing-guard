@@ -46,6 +46,13 @@ android {
                 "proguard-rules.pro"
             )
         }
+        // A release build with Pro always on, for testers before the app is on Google Play
+        // (./gradlew assembleBeta). Never upload it: Play gets bundleRelease. The switch is
+        // app/src/beta/res/values/bools.xml.
+        create("beta") {
+            initWith(getByName("release"))
+            matchingFallbacks += "release"
+        }
     }
 
     compileOptions {

@@ -1,10 +1,12 @@
 # PrivacyGuard: Play Console texts and answers
 
-Copy these into the Play Console when the app is published. The reasons behind each answer are in
-[PLAY_VERSION_PLAN.md](PLAY_VERSION_PLAN.md) (sections 4, 8 and 9).
+Copy these into the Play Console when the app is published. The Play rules behind each answer
+are in [PLAY_RULES.md](PLAY_RULES.md).
 
-Words never to use in the listing or screenshots: ad, ads, adblock, ad blocker, "remove ads",
-"block ads", "1 million", best, #1, "100% protection", "blocks everything".
+PrivacyGuard is a content blocker for privacy and security. Describe only what it blocks:
+trackers, phone telemetry, malware, phishing, scams and, with Pro, adult content, gambling,
+filter bypass, newly registered domains, cryptojacking and stalkerware. No rankings ("best",
+"#1"), no "100% protection", no "blocks everything", no big domain counts.
 
 ## Store listing
 
@@ -57,8 +59,8 @@ https://elwyndraker.github.io/testing-guard/
 | Feature graphic 1024×500 | `brand/play-store/feature-graphic-1024x500.png` (regenerate with `python3 brand/generate.py`) |
 | Phone screenshots (2–8) | `play-store/screenshots/` |
 
-Screenshots to take (`adb exec-out screencap -p > N.png`), with no ad domains, no adult names and
-no made-up numbers on screen:
+Screenshots to take (`adb exec-out screencap -p > N.png`), with only tracker or security domains, no adult names
+and no made-up numbers on screen:
 
 1. Home, protection on
 2. Blocked screen with tracker domains
@@ -81,7 +83,7 @@ no made-up numbers on screen:
 
 | Form | Answer |
 | --- | --- |
-| Ads | No, the app contains no ads |
+| Ads (does the app show ads?) | No |
 | App access | All functionality is available without special access. Note for reviewers: "Pro features are a one-time in-app purchase." |
 | Content rating | Utility / tools. Names of blocked adult sites are never shown ("Adult site blocked"). |
 | Target audience | 18 and over |
@@ -107,7 +109,7 @@ default, this answer must change.
 - **Description:**
 
   ```
-  PrivacyGuard is an on-device DNS firewall. It uses VpnService to create a local-only tunnel that receives only DNS queries sent to one internal address. Queries for known tracker, malware and phishing domains (and, if the user turns them on, adult or gambling domains) are answered on the device; all other queries are forwarded unchanged to the device's DNS server. No other traffic enters the tunnel, there is no remote VPN server, and the app does not block, change or redirect ads or the monetization of other apps. Pro users can set a PIN so that protection and filters can't be changed without it, for parents setting up a child's phone.
+  PrivacyGuard is an on-device DNS firewall and content blocker for privacy and security. It uses VpnService to create a local-only tunnel that receives only DNS queries sent to one internal address. Queries for known tracker, phone telemetry, malware, phishing and scam domains (and, if the user turns them on, adult, gambling, filter bypass, cryptojacking or stalkerware domains) are answered on the device; all other queries are forwarded unchanged to the device's DNS server. No other traffic enters the tunnel, there is no remote VPN server, and the app does not block, change or redirect the monetization of other apps. Pro users can set a PIN so that protection and filters can't be changed without it, for parents setting up a child's phone.
   ```
 
 - **Data collected or shared through VpnService:** None.

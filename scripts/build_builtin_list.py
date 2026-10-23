@@ -5,7 +5,7 @@ The app ships it so blocking works on first launch, even offline, and then downl
 fresh copy. Run this before a release so the built-in copy isn't months old:
     python3 scripts/build_builtin_list.py
 
-It reads the sources from Filter.kt (Filter.STANDARD) and the ads exclusion list from
+It reads the sources from Filter.kt (Filter.STANDARD) and the exclusion list from
 Blocklist.kt, so they never drift apart. The parsing follows Blocklist.parse in Kotlin:
 keep the two in step.
 """
@@ -28,7 +28,7 @@ def sources():
     hagezi = re.search(r'HAGEZI = "([^"]+)"', text).group(1)
     block = re.search(r"STANDARD\((.*?)\n    \),", text, re.S).group(1)
     urls = [u.replace("$HAGEZI", hagezi) for u in re.findall(r'"(https://[^"]+|\$HAGEZI[^"]+)"', block)]
-    excl = re.search(r'ADS_EXCLUSION_SOURCE = "([^"]+)"',
+    excl = re.search(r'EXCLUSION_SOURCE = "([^"]+)"',
                      open(os.path.join(DATA, "Blocklist.kt"), encoding="utf-8").read()).group(1)
     return urls, excl
 
@@ -52,7 +52,7 @@ def under(name, names):
 
 def parse(lines, excluded=frozenset()):
     out = set()
-    adblock = False
+    filter_rules = False
 
     def add(candidate):
         name = candidate.lower()
@@ -61,8 +61,8 @@ def parse(lines, excluded=frozenset()):
 
     for raw in lines:
         line = raw.lstrip("﻿").strip()
-        if line.startswith("[Adblock") or line.startswith("||"):
-            adblock = True
+        if line.startswith("[") or line.startswith("||"):
+            filter_rules = True
         if not line or line[0] in "![":
             continue
         if any(m in line for m in ("##", "#@#", "#?#", "#$#")):
@@ -77,7 +77,7 @@ def parse(lines, excluded=frozenset()):
             if rule.startswith("||"):
                 if rule.endswith("^"):
                     add(rule[2:-1])
-            elif adblock:
+            elif filter_rules:
                 pass
             elif rule.startswith("*."):
                 add(rule[2:])
@@ -96,7 +96,7 @@ def main():
     urls, excl_url = sources()
     excluded = frozenset(parse(fetch(excl_url)))
     if len(excluded) < 10_000:
-        sys.exit(f"ads exclusion list looks broken: {len(excluded)} domains")
+        sys.exit(f"exclusion list looks broken: {len(excluded)} domains")
     domains = set()
     for url in urls:
         found = parse(fetch(url), excluded)
@@ -105,12 +105,12 @@ def main():
     if len(domains) < 10_000:
         sys.exit(f"list looks broken: {len(domains)} domains")
     with open(OUT, "w", encoding="utf-8") as f:
-        f.write("# PrivacyGuard built-in list: trackers and security, ads domains removed.\n")
+        f.write("# PrivacyGuard built-in list: trackers and security; domains on the exclusion list removed.\n")
         f.write("# Built by scripts/build_builtin_list.py from the sources in Filter.STANDARD.\n")
         f.write("# Credits and licences: see the app's Licences screen and the README.\n")
         for name in sorted(domains):
             f.write(name + "\n")
-    print(f"{len(domains)} domains ({len(excluded)} ads domains excluded) -> {OUT}")
+    print(f"{len(domains)} domains ({len(excluded)} excluded domains skipped) -> {OUT}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,4 @@
+<resources>
+    <!-- Beta (tester) build: Pro is always on, without a Google Play purchase. -->
+    <bool name="pro_for_testers">true</bool>
+</resources>
