@@ -1,6 +1,7 @@
 package com.pg.privacyguard.ui
 
 import android.text.format.DateFormat
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
@@ -31,7 +33,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -58,6 +62,7 @@ fun FiltersScreen() {
     var showAbout by remember { mutableStateOf(false) }
     var showCredits by remember { mutableStateOf(false) }
     var downloading by remember { mutableStateOf<Filter?>(null) }
+    var lockedFilter by remember { mutableStateOf<Filter?>(null) }
     val pro by Pro.active.collectAsStateWithLifecycle()
     val enabledFilters by Settings.enabledFilters(context).collectAsStateWithLifecycle(initialValue = emptySet())
     val fallback by Settings.publicDnsFallback(context).collectAsStateWithLifecycle(initialValue = false)
@@ -68,6 +73,7 @@ fun FiltersScreen() {
     val failedText = stringResource(R.string.update_failed)
 
     if (showCredits) CreditsDialog(onDismiss = { showCredits = false })
+    lockedFilter?.let { ProDialog(stringResource(filterTitle(it)), onDismiss = { lockedFilter = null }) }
 
     if (showAbout) {
         AlertDialog(
@@ -176,6 +182,7 @@ fun FiltersScreen() {
                 checked = pro && filter in enabledFilters,
                 enabled = pro && downloading == null,
                 downloading = downloading == filter,
+                onLockedClick = if (pro) null else ({ lockedFilter = filter }),
                 onChange = { on ->
                     pinGate.run {
                         downloading = filter
@@ -219,6 +226,7 @@ fun FiltersScreen() {
     }
 }
 
+/** A filter's switch. With [onLockedClick], the filter needs Pro: a lock replaces the switch and tapping the row calls it. */
 @Composable
 private fun FilterRow(
     filter: Filter,
@@ -226,7 +234,37 @@ private fun FilterRow(
     enabled: Boolean,
     onChange: (Boolean) -> Unit,
     downloading: Boolean = false,
+    onLockedClick: (() -> Unit)? = null,
 ) {
+    if (onLockedClick != null) {
+        val proLabel = stringResource(R.string.tab_pro)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClickLabel = stringResource(R.string.pro_unlock_action), role = Role.Button, onClick = onLockedClick),
+        ) {
+            Column(Modifier.weight(1f).padding(end = 16.dp)) {
+                Text(stringResource(filterTitle(filter)), style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    stringResource(filterDetail(filter)),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painterResource(R.drawable.ic_lock),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(18.dp),
+                )
+                Spacer(Modifier.width(4.dp))
+                Text(proLabel, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+            }
+        }
+        return
+    }
     SwitchRow(
         title = stringResource(filterTitle(filter)),
         detail = if (downloading) stringResource(R.string.filter_downloading) else stringResource(filterDetail(filter)),

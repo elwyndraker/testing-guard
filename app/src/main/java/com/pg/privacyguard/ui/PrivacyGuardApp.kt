@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.pg.privacyguard.R
 import com.pg.privacyguard.billing.Billing
 import com.pg.privacyguard.data.Blocklist
@@ -42,10 +44,12 @@ fun PrivacyGuardApp() {
     val context = LocalContext.current
     var selected by rememberSaveable { mutableIntStateOf(0) }
 
+    // Every time the app comes to the front: restores Pro on a new phone, picks up a purchase
+    // finished in the Play Store app, and removes Pro after a refund.
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { Billing.connect(context) }
+
     LaunchedEffect(Unit) {
         Blocklist.load(context)
-        // Restores Pro on a new phone and removes it after a refund.
-        Billing.connect(context)
         // Automatic weekly update, and right away when the list of sources has changed
         // (e.g. after an app update). Failure is fine: the current list keeps working.
         val lastUpdated = Settings.lastUpdated(context).first()

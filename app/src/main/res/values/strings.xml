@@ -57,7 +57,7 @@
     <string name="filter_stalkerware">Stalkerware</string>
     <string name="filter_stalkerware_detail">Blocks the servers of known stalkerware apps that secretly report on a phone.</string>
     <string name="pro_filters">Pro filters</string>
-    <string name="pro_needed">Unlock Pro on the Pro tab to use this.</string>
+    <string name="pro_needed">Tap a filter to see what Pro includes.</string>
     <string name="filter_downloading">Downloading…</string>
     <string name="public_dns_fallback">Public DNS fallback</string>
     <string name="public_dns_fallback_detail">If your network\'s DNS server doesn\'t answer, ask Cloudflare (1.1.1.1) or Google (8.8.8.8) instead. Off by default, because those lookups then leave the phone to that company.</string>
@@ -87,6 +87,9 @@
     <string name="pro_pending">Payment pending. Pro unlocks as soon as Google Play confirms it.</string>
     <string name="pro_not_available">Google Play purchases aren\'t available right now. Check that the app was installed from Google Play and try again.</string>
     <string name="pro_purchase_failed">The purchase didn\'t go through. Please try again.</string>
+    <string name="pro_locked_title">%1$s is a Pro filter</string>
+    <string name="pro_unlock_action">unlock Pro</string>
+    <string name="not_now">Not now</string>
     <string name="pro_restore_note">Bought Pro before? It comes back on its own when you sign in to Google Play with the same account.</string>
 
     <!-- PIN lock -->

@@ -13,10 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -33,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -79,8 +82,6 @@ fun ProScreen() {
 
 @Composable
 private fun PurchaseCard(pro: Boolean) {
-    val context = LocalContext.current
-    val billing by Billing.state.collectAsStateWithLifecycle()
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
@@ -88,38 +89,76 @@ private fun PurchaseCard(pro: Boolean) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (pro) {
                 Text(stringResource(R.string.pro_active), fontWeight = FontWeight.SemiBold)
-                return@Column
-            }
-            Text(stringResource(R.string.pro_pitch))
-            for (feature in listOf(
-                R.string.pro_feature_filters,
-                R.string.pro_feature_pin,
-                R.string.pro_feature_security,
-                R.string.pro_feature_rules,
-                R.string.pro_feature_history,
-            )) {
-                Text("•  " + stringResource(feature), style = MaterialTheme.typography.bodyMedium)
-            }
-            if (billing.pending) {
-                Text(stringResource(R.string.pro_pending), fontWeight = FontWeight.SemiBold)
             } else {
-                Button(
-                    onClick = {
-                        Billing.clearMessage()
-                        context.findActivity()?.let { Billing.buy(it) }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        billing.price?.let { stringResource(R.string.pro_buy, it) }
-                            ?: stringResource(R.string.pro_buy_no_price)
-                    )
-                }
+                ProOffer()
             }
-            billing.message?.let { Text(stringResource(it), color = MaterialTheme.colorScheme.error) }
-            Text(stringResource(R.string.pro_restore_note), style = MaterialTheme.typography.bodySmall)
         }
     }
+}
+
+/** What Pro includes and the button that opens Google Play's purchase screen. */
+@Composable
+private fun ProOffer() {
+    val context = LocalContext.current
+    val billing by Billing.state.collectAsStateWithLifecycle()
+    Text(stringResource(R.string.pro_pitch))
+    for (feature in listOf(
+        R.string.pro_feature_filters,
+        R.string.pro_feature_pin,
+        R.string.pro_feature_security,
+        R.string.pro_feature_rules,
+        R.string.pro_feature_history,
+    )) {
+        Text("•  " + stringResource(feature), style = MaterialTheme.typography.bodyMedium)
+    }
+    if (billing.pending) {
+        Text(stringResource(R.string.pro_pending), fontWeight = FontWeight.SemiBold)
+    } else {
+        Button(
+            onClick = {
+                Billing.clearMessage()
+                context.findActivity()?.let { Billing.buy(it) }
+            },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                billing.price?.let { stringResource(R.string.pro_buy, it) }
+                    ?: stringResource(R.string.pro_buy_no_price)
+            )
+        }
+    }
+    billing.message?.let { Text(stringResource(it), color = MaterialTheme.colorScheme.error) }
+    Text(stringResource(R.string.pro_restore_note), style = MaterialTheme.typography.bodySmall)
+}
+
+/**
+ * Shown when a locked Pro feature is tapped. Closes by itself once Pro is unlocked, so the
+ * user lands back on the feature they wanted.
+ */
+@Composable
+fun ProDialog(feature: String, onDismiss: () -> Unit) {
+    val pro by Pro.active.collectAsStateWithLifecycle()
+    LaunchedEffect(pro) { if (pro) onDismiss() }
+    AlertDialog(
+        onDismissRequest = {
+            Billing.clearMessage()
+            onDismiss()
+        },
+        icon = { Icon(painterResource(R.drawable.ic_lock), contentDescription = null) },
+        title = { Text(stringResource(R.string.pro_locked_title, feature)) },
+        text = {
+            Column(
+                Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) { ProOffer() }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                Billing.clearMessage()
+                onDismiss()
+            }) { Text(stringResource(R.string.not_now)) }
+        },
+    )
 }
 
 @Composable
