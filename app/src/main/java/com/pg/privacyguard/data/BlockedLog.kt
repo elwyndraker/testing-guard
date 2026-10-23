@@ -4,8 +4,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.time.LocalDate
 
-/** One row in the Blocked list. [count] is how many times the domain was blocked in a burst. */
-data class BlockedEntry(val id: Long, val domain: String, val time: Long, val count: Int = 1)
+/**
+ * One row in the Blocked list. [count] is how many times the domain was blocked in a burst.
+ * [filter] says which list blocked it; adult names are never shown on screen.
+ */
+data class BlockedEntry(
+    val id: Long,
+    val domain: String,
+    val time: Long,
+    val count: Int = 1,
+    val filter: Filter = Filter.STANDARD,
+)
 
 /** Recently blocked lookups, newest first. Kept in memory only, never saved or sent anywhere. */
 object BlockedLog {
@@ -24,7 +33,7 @@ object BlockedLog {
     private var day = LocalDate.now()
 
     @Synchronized
-    fun add(domain: String, now: Long = System.currentTimeMillis()) {
+    fun add(domain: String, filter: Filter = Filter.STANDARD, now: Long = System.currentTimeMillis()) {
         val today = LocalDate.now()
         if (today != day) {
             day = today
@@ -35,7 +44,7 @@ object BlockedLog {
         val current = _entries.value
         val recent = current.firstOrNull { it.domain == domain && now - it.time < MERGE_WINDOW_MS }
         val entry = recent?.copy(time = now, count = recent.count + 1)
-            ?: BlockedEntry(nextId++, domain, now)
+            ?: BlockedEntry(nextId++, domain, now, filter = filter)
         _entries.value = (listOf(entry) + current.filter { it !== recent }).take(MAX_ENTRIES)
     }
 

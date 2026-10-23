@@ -93,6 +93,7 @@ fun HomeScreen() {
     val disclosureAccepted by Settings.disclosureAccepted(context)
         .collectAsStateWithLifecycle(initialValue = false)
     var showDisclosure by remember { mutableStateOf(false) }
+    val pinGate = rememberPinGate()
 
     // Android's own "Connection request" popup. RESULT_OK means the user allowed the VPN.
     val vpnPermission = rememberLauncherForActivityResult(
@@ -132,7 +133,7 @@ fun HomeScreen() {
 
     fun onSwitchChange(on: Boolean) {
         when {
-            !on -> VpnController.stop(context)
+            !on -> pinGate.run { VpnController.stop(context) }
             disclosureAccepted -> turnOn()
             else -> showDisclosure = true
         }

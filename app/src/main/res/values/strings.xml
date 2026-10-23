@@ -5,11 +5,12 @@
     <string name="tab_home">Home</string>
     <string name="tab_blocked">Blocked</string>
     <string name="tab_filters">Filters</string>
+    <string name="tab_pro">Pro</string>
 
     <!-- Home -->
     <string name="status_protected">Protected</string>
     <string name="status_not_protected">Not protected</string>
-    <string name="status_on_detail">Tracking and ad domains are being blocked on this phone.</string>
+    <string name="status_on_detail">Known trackers, malware and phishing sites are being blocked on this phone.</string>
     <string name="status_off_detail">Turn on the switch to start filtering.</string>
     <string name="protection_switch">Protection</string>
     <string name="blocked_today">Blocked today</string>
@@ -19,7 +20,7 @@
 
     <!-- Disclosure shown before Android's VPN popup -->
     <string name="disclosure_title">How PrivacyGuard works</string>
-    <string name="disclosure_text">PrivacyGuard uses a local VPN to filter website lookups on this phone. Lookups for known tracking and ad domains are blocked; all others go to your normal DNS server.\n\nNothing is sent to us, and no data leaves your phone because of this app.</string>
+    <string name="disclosure_text">PrivacyGuard uses a local VPN on this phone to check website lookups (DNS). Lookups for known trackers, malware and phishing sites are blocked; all others go to your normal DNS server.\n\nNo VPN server is used. Nothing is sent to us, and no data leaves your phone because of this app.</string>
     <string name="disclosure_continue">Continue</string>
     <string name="disclosure_cancel">Not now</string>
 
@@ -28,27 +29,102 @@
     <string name="clear">Clear</string>
     <string name="blocked_times">Blocked %1$d times</string>
     <string name="blocked_empty">Nothing blocked yet. Turn protection on and browse a website.</string>
+    <string name="adult_site_blocked">Adult site blocked</string>
 
     <!-- Filters -->
     <string name="filters_title">Filters</string>
-    <string name="domains_in_list">domains in the blocklist</string>
+    <string name="domains_in_list">domains in the blocklists</string>
     <string name="last_updated">Last updated: %1$s</string>
     <string name="built_in_list">Using the built-in list (not updated yet)</string>
     <string name="update_now">Update now</string>
     <string name="updating">Updating…</string>
-    <string name="update_done">List updated</string>
-    <string name="update_done_partial">List updated. %1$d of %2$d sources could not be downloaded; they will be tried again at the next update.</string>
+    <string name="update_done">Lists updated</string>
+    <string name="update_done_partial">Lists updated. %1$d of %2$d sources could not be downloaded; they will be tried again at the next update.</string>
     <string name="update_failed">Update failed: %1$s</string>
-    <string name="auto_update_note">The list also updates automatically when it is older than 7 days.</string>
+    <string name="auto_update_note">The lists also update automatically when they are older than 7 days.</string>
+    <string name="filter_standard">Trackers and security</string>
+    <string name="filter_standard_detail">Trackers, analytics, phone maker telemetry, malware, phishing and scam sites. Always on.</string>
+    <string name="filter_adult">Adult content</string>
+    <string name="filter_adult_detail">Blocks adult sites. Their names are never shown in the app.</string>
+    <string name="filter_gambling">Gambling</string>
+    <string name="filter_gambling_detail">Blocks betting and casino sites.</string>
+    <string name="filter_bypass">Block filter bypass</string>
+    <string name="filter_bypass_detail">Blocks public encrypted DNS, VPN and proxy services that apps and browsers could use to get around the filter.</string>
+    <string name="filter_new_domains">Newly registered domains</string>
+    <string name="filter_new_domains_detail">Blocks machine-generated domains registered in the past week, often used for malware. Large list; can block a new legitimate site now and then.</string>
+    <string name="filter_cryptojacking">Cryptojacking</string>
+    <string name="filter_cryptojacking_detail">Blocks sites that use your phone to mine cryptocurrency.</string>
+    <string name="filter_stalkerware">Stalkerware</string>
+    <string name="filter_stalkerware_detail">Blocks the servers of known stalkerware apps that secretly report on a phone.</string>
+    <string name="pro_filters">Pro filters</string>
+    <string name="pro_needed">Unlock Pro on the Pro tab to use this.</string>
+    <string name="filter_downloading">Downloading…</string>
+    <string name="public_dns_fallback">Public DNS fallback</string>
+    <string name="public_dns_fallback_detail">If your network\'s DNS server doesn\'t answer, ask Cloudflare (1.1.1.1) or Google (8.8.8.8) instead. Off by default, because those lookups then leave the phone to that company.</string>
     <string name="about">About and privacy</string>
-    <string name="about_text">PrivacyGuard filters website lookups on your phone. It collects no personal data, has no account and no server. Blocked lookups never leave the phone; other lookups go to your network\'s normal DNS server (or to Cloudflare 1.1.1.1 / Google 8.8.8.8 if that server does not answer quickly).</string>
+    <string name="about_text">PrivacyGuard filters website lookups on your phone. It collects no personal data, has no account and no server. Blocked lookups never leave the phone; other lookups go to your network\'s normal DNS server (and, only if you turn on Public DNS fallback, to Cloudflare or Google when that server doesn\'t answer).</string>
     <string name="privacy_policy">Read the privacy policy</string>
-    <string name="blocklist_credit">Blocklist sources and their licenses</string>
+    <string name="licenses">Licences and list credits</string>
+    <string name="licenses_intro">PrivacyGuard is free software under the GNU General Public License v3.0. The blocklists are made by these projects, under their own licences:</string>
+    <string name="source_code">Source code</string>
     <string name="close">Close</string>
     <string name="version">Version %1$s</string>
     <!-- Served by GitHub Pages from docs/index.html -->
     <string name="privacy_policy_url" translatable="false">https://elwyndraker.github.io/testing-guard/</string>
-    <string name="blocklist_url" translatable="false">https://github.com/elwyndraker/testing-guard#blocklist-sources</string>
+    <string name="source_code_url" translatable="false">https://github.com/elwyndraker/testing-guard</string>
+
+    <!-- Pro -->
+    <string name="pro_title">PrivacyGuard Pro</string>
+    <string name="pro_pitch">A one-time purchase. Tracker, malware and phishing blocking stay free.</string>
+    <string name="pro_feature_filters">Adult content and gambling filters</string>
+    <string name="pro_feature_pin">PIN lock for protection and filter settings</string>
+    <string name="pro_feature_security">Extra security lists and filter bypass blocking</string>
+    <string name="pro_feature_rules">My rules: block or allow single sites</string>
+    <string name="pro_feature_history">7-day history and daily stats, kept on your phone</string>
+    <string name="pro_buy">Unlock Pro for %1$s</string>
+    <string name="pro_buy_no_price">Unlock Pro</string>
+    <string name="pro_active">Pro is unlocked. Thank you!</string>
+    <string name="pro_pending">Payment pending. Pro unlocks as soon as Google Play confirms it.</string>
+    <string name="pro_not_available">Google Play purchases aren\'t available right now. Check that the app was installed from Google Play and try again.</string>
+    <string name="pro_purchase_failed">The purchase didn\'t go through. Please try again.</string>
+    <string name="pro_restore_note">Bought Pro before? It comes back on its own when you sign in to Google Play with the same account.</string>
+
+    <!-- PIN lock -->
+    <string name="pin_title">PIN lock</string>
+    <string name="pin_detail">Asks for a PIN before protection can be turned off or filters changed. It can\'t stop someone from turning off the VPN in Android\'s settings or uninstalling the app; for that, use Android\'s Always-on VPN and parental controls.</string>
+    <string name="pin_set">Set a PIN</string>
+    <string name="pin_change">Change PIN</string>
+    <string name="pin_remove">Remove PIN</string>
+    <string name="pin_enter">Enter your PIN</string>
+    <string name="pin_new">New PIN (%1$d to %2$d digits)</string>
+    <string name="pin_confirm">Repeat the new PIN</string>
+    <string name="pin_wrong">Wrong PIN</string>
+    <string name="pin_mismatch">The PINs don\'t match</string>
+    <string name="pin_wait">Too many tries. Wait %1$d seconds.</string>
+    <string name="pin_forgot">Forgot the PIN? Clear the app\'s storage in Android settings. Pro comes back from Google Play; your filters and rules must be set again.</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- My rules -->
+    <string name="rules_title">My rules</string>
+    <string name="rules_detail">A rule also covers the site\'s subdomains. Allowed sites are never blocked.</string>
+    <string name="rules_domain">Site, e.g. example.com</string>
+    <string name="rules_block">Block</string>
+    <string name="rules_allow">Allow</string>
+    <string name="rules_invalid">That isn\'t a site name</string>
+    <string name="rules_blocked">Blocked by you</string>
+    <string name="rules_allowed">Allowed by you</string>
+    <string name="rules_empty">No rules yet.</string>
+    <string name="rules_remove">Remove %1$s</string>
+
+    <!-- History -->
+    <string name="history_title">Last 7 days</string>
+    <string name="history_detail">Kept on this phone only, for 7 days.</string>
+    <string name="history_today">Today</string>
+    <string name="history_top">Most blocked this week</string>
+    <string name="history_empty">Nothing blocked in the last 7 days.</string>
+    <string name="history_clear">Clear history</string>
+    <string name="adult_sites">Adult sites</string>
 
     <!-- Diagnostics and the safety switch -->
     <string name="stats_line">Lookups answered: %1$d · failed: %2$d</string>
@@ -67,9 +143,10 @@
     <string name="app_update_downloaded">The update is downloaded. Restart PrivacyGuard to install it.</string>
     <string name="app_update_restart">Restart</string>
 
-    <!-- Notification -->
+    <!-- Notification and Quick Settings tile -->
     <string name="channel_name">Protection status</string>
     <string name="notification_title">PrivacyGuard is protecting you</string>
-    <string name="notification_text">Blocking tracking and ad domains on this phone</string>
+    <string name="notification_text">Blocking trackers and harmful sites on this phone</string>
     <string name="turn_off">Turn off</string>
+    <string name="tile_label">PrivacyGuard</string>
 </resources>

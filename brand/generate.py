@@ -146,7 +146,7 @@ def feature_graphic_svg():
   <rect width="1024" height="500" fill="url(#fg)"/>
   <g transform="translate(-75,-85) scale(6.2)">{svg_foreground()}</g>
   <text x="500" y="232" font-family="{font}" font-weight="700" font-size="72" fill="{WHITE}">PrivacyGuard</text>
-  <text x="502" y="290" font-family="{font}" font-weight="500" font-size="32" fill="{ORBIT}">Block ads and trackers</text>
+  <text x="502" y="290" font-family="{font}" font-weight="500" font-size="32" fill="{ORBIT}">Block trackers and scams</text>
   <text x="502" y="330" font-family="{font}" font-weight="500" font-size="32" fill="{ORBIT}">on your whole phone</text>
   <text x="502" y="388" font-family="{font}" font-weight="400" font-size="22" fill="#9FD9C8">No root · No account · Nothing leaves your phone</text>
 </svg>

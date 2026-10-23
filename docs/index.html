@@ -22,21 +22,25 @@
 <body>
 <main>
   <h1>PrivacyGuard Privacy Policy</h1>
-  <p class="date">Effective date: October 21, 2026 (updated for version 1.3)</p>
+  <p class="date">Effective date: October 23, 2026</p>
 
-  <p>PrivacyGuard is a free Android app that blocks known tracking and advertising domains on your phone. This policy explains what happens to your data.</p>
+  <p>PrivacyGuard is an Android app that blocks known trackers, phone telemetry, malware, phishing and scam domains on your phone. This policy explains what happens to your data.</p>
 
   <h2>Summary</h2>
   <p>PrivacyGuard does not collect, store, sell or share any personal data. There is no account and no server run by us.</p>
 
   <h2>How the app handles your data</h2>
   <ul>
-    <li><strong>Website lookups (DNS).</strong> When protection is on, PrivacyGuard uses Android's VpnService to create a local VPN on your phone. Only DNS lookups (the names of websites and services your apps contact) pass through it. Each name is checked against a blocklist on your phone. Blocked names are answered on the phone. Other lookups are forwarded unchanged to your network's normal DNS server, as your phone would do without the app. If that server cannot be found or does not respond quickly, the lookup is also sent to a public DNS service, Cloudflare (1.1.1.1) or Google (8.8.8.8), which handles it under its own privacy policy (<a href="https://www.cloudflare.com/privacypolicy/">Cloudflare</a>, <a href="https://developers.google.com/speed/public-dns/privacy">Google</a>).</li>
+    <li><strong>Website lookups (DNS).</strong> When protection is on, PrivacyGuard uses Android's VpnService to create a local VPN on your phone. Only DNS lookups (the names of websites and services your apps contact) pass through it. Each name is checked against the blocklists on your phone. Blocked names are answered on the phone. Other lookups are forwarded unchanged to your network's normal DNS server, as your phone would do without the app.</li>
+    <li><strong>Public DNS fallback (off by default).</strong> Only if you turn on <em>Public DNS fallback</em> on the Filters screen, a lookup that your network's DNS server doesn't answer is also sent to Cloudflare (1.1.1.1) or Google (8.8.8.8), which handle it under their own privacy policies (<a href="https://www.cloudflare.com/privacypolicy/">Cloudflare</a>, <a href="https://developers.google.com/speed/public-dns/privacy">Google</a>).</li>
     <li><strong>Page content.</strong> Web pages, videos and other traffic do not pass through PrivacyGuard.</li>
-    <li><strong>Blocked-requests list.</strong> The list of blocked names is kept in the phone's memory only, never saved to a server, and is cleared when the app is closed.</li>
-    <li><strong>Blocklist updates.</strong> The app downloads public blocklists (<a href="https://github.com/elwyndraker/testing-guard#blocklist-sources">full list</a>) from the servers that publish them: GitHub (raw.githubusercontent.com), GitLab (gitlab.com), easylist-downloads.adblockplus.org, hblock.molinero.dev, www.github.developerdan.com and hosts.flossboxin.org.in. Like any download, each server receives your IP address for that request. Nothing else is sent.</li>
-    <li><strong>App updates.</strong> If the app was installed from Google Play, it asks the Play Store app on your phone whether a newer version exists, using Google's in-app updates library. Updates are downloaded and installed by Google Play under <a href="https://policies.google.com/privacy">Google's privacy policy</a>.</li>
-    <li><strong>Settings.</strong> Whether protection is on and when the list was last updated are stored on your phone only.</li>
+    <li><strong>Blocked-requests list.</strong> The live list of blocked names is kept in the phone's memory only and is cleared when the app is closed. Names blocked by the Adult content filter are never shown.</li>
+    <li><strong>History (Pro).</strong> If you have Pro, the number of blocked lookups per day and per name for the last 7 days is saved on your phone only, so the app can show it to you. Adult names are counted without saving the name. Older days are deleted automatically, and you can clear the history at any time. It is never sent anywhere.</li>
+    <li><strong>My rules and PIN (Pro).</strong> Names you block or allow yourself are saved on your phone only. If you set a PIN, only a salted hash of it is saved on your phone.</li>
+    <li><strong>Blocklist updates.</strong> The app downloads public blocklists from the servers that publish them: GitHub (raw.githubusercontent.com), GitLab (gitlab.com), jsDelivr (cdn.jsdelivr.net), easylist.to and easylist-downloads.adblockplus.org. The full list of sources is shown under <em>Licences and list credits</em> in the app and in the <a href="https://github.com/elwyndraker/testing-guard#blocklist-sources">source code</a>. Like any download, each server receives your IP address for that request. Nothing else is sent.</li>
+    <li><strong>Purchases.</strong> PrivacyGuard Pro is bought through Google Play. Google handles the payment under <a href="https://policies.google.com/privacy">Google's privacy policy</a>; we don't receive your payment details. The app asks Google Play on your phone whether Pro was bought, so it can unlock it.</li>
+    <li><strong>App updates.</strong> The app asks the Play Store app on your phone whether a newer version exists, using Google's in-app updates library. Updates are downloaded and installed by Google Play under <a href="https://policies.google.com/privacy">Google's privacy policy</a>.</li>
+    <li><strong>Settings.</strong> Whether protection is on, which filters are on and when the lists were last updated are stored on your phone only.</li>
   </ul>
 
   <h2>What we do not do</h2>
@@ -47,7 +51,11 @@
     <li><strong>VPN (VpnService):</strong> to receive DNS lookups on the device.</li>
     <li><strong>Internet and network state:</strong> to forward allowed lookups and download the blocklists.</li>
     <li><strong>Notifications and foreground service:</strong> to show that protection is running.</li>
+    <li><strong>Google Play billing:</strong> to buy and restore Pro.</li>
   </ul>
+
+  <h2>Deleting your data</h2>
+  <p>All data the app keeps is on your phone. Clearing the app's storage in Android's settings, or uninstalling the app, deletes it.</p>
 
   <h2>Children</h2>
   <p>PrivacyGuard is not directed at children under 13.</p>

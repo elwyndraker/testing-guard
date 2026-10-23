@@ -29,6 +29,18 @@ class DomainSet private constructor(
         }
     }
 
+    /** True if [name] or one of its parents is in the set: a.b.example.com, b.example.com, example.com. */
+    fun containsDomainOrParent(name: String): Boolean {
+        var start = 0
+        while (start < name.length) {
+            if (contains(name, start)) return true
+            val dot = name.indexOf('.', start)
+            if (dot < 0) return false
+            start = dot + 1
+        }
+        return false
+    }
+
     /** Writes one domain per line. */
     fun writeTo(out: OutputStream) = writeEntries(bytes, bytes.size, out)
 

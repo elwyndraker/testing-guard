@@ -18,6 +18,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -37,6 +38,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pg.privacyguard.BuildConfigInfo
 import com.pg.privacyguard.R
 import com.pg.privacyguard.data.Blocklist
+import com.pg.privacyguard.data.Filter
+import com.pg.privacyguard.data.Pro
 import com.pg.privacyguard.data.Settings
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -53,10 +56,18 @@ fun FiltersScreen() {
     var updating by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
     var showAbout by remember { mutableStateOf(false) }
+    var showCredits by remember { mutableStateOf(false) }
+    var downloading by remember { mutableStateOf<Filter?>(null) }
+    val pro by Pro.active.collectAsStateWithLifecycle()
+    val enabledFilters by Settings.enabledFilters(context).collectAsStateWithLifecycle(initialValue = emptySet())
+    val fallback by Settings.publicDnsFallback(context).collectAsStateWithLifecycle(initialValue = false)
+    val pinGate = rememberPinGate()
 
     val doneText = stringResource(R.string.update_done)
     val partialText = stringResource(R.string.update_done_partial)
     val failedText = stringResource(R.string.update_failed)
+
+    if (showCredits) CreditsDialog(onDismiss = { showCredits = false })
 
     if (showAbout) {
         AlertDialog(
@@ -118,9 +129,9 @@ fun FiltersScreen() {
                 message = null
                 scope.launch {
                     message = try {
-                        val failed = Blocklist.update(context)
-                        if (failed == 0) doneText
-                        else partialText.format(failed, Blocklist.SOURCES.size)
+                        val result = Blocklist.update(context)
+                        if (result.failed == 0) doneText
+                        else partialText.format(result.failed, result.total)
                     } catch (e: CancellationException) {
                         throw e
                     } catch (e: Exception) {
@@ -149,6 +160,48 @@ fun FiltersScreen() {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
+        FilterRow(Filter.STANDARD, checked = true, enabled = false, onChange = {})
+
+        Text(stringResource(R.string.pro_filters), style = MaterialTheme.typography.titleMedium)
+        if (!pro) {
+            Text(
+                stringResource(R.string.pro_needed),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        for (filter in Filter.entries.filter { it.pro }) {
+            FilterRow(
+                filter,
+                checked = pro && filter in enabledFilters,
+                enabled = pro && downloading == null,
+                downloading = downloading == filter,
+                onChange = { on ->
+                    pinGate.run {
+                        downloading = filter
+                        message = null
+                        scope.launch {
+                            try {
+                                Blocklist.setEnabled(context, filter, on)
+                            } catch (e: CancellationException) {
+                                throw e
+                            } catch (e: Exception) {
+                                message = failedText.format(e.message ?: e.javaClass.simpleName)
+                            }
+                            downloading = null
+                        }
+                    }
+                },
+            )
+        }
+
+        SwitchRow(
+            title = stringResource(R.string.public_dns_fallback),
+            detail = stringResource(R.string.public_dns_fallback_detail),
+            checked = fallback,
+            onChange = { on -> pinGate.run { scope.launch { Settings.setPublicDnsFallback(context, on) } } },
+        )
+
         Spacer(Modifier.size(8.dp))
         OutlinedButton(onClick = { showAbout = true }, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.about))
@@ -160,9 +213,40 @@ fun FiltersScreen() {
         ) {
             Text(stringResource(R.string.privacy_policy))
         }
-        val blocklistUrl = stringResource(R.string.blocklist_url)
-        TextButton(onClick = { runCatching { uriHandler.openUri(blocklistUrl) } }) {
-            Text(stringResource(R.string.blocklist_credit))
+        TextButton(onClick = { showCredits = true }) {
+            Text(stringResource(R.string.licenses))
         }
+    }
+}
+
+@Composable
+private fun FilterRow(
+    filter: Filter,
+    checked: Boolean,
+    enabled: Boolean,
+    onChange: (Boolean) -> Unit,
+    downloading: Boolean = false,
+) {
+    SwitchRow(
+        title = stringResource(filterTitle(filter)),
+        detail = if (downloading) stringResource(R.string.filter_downloading) else stringResource(filterDetail(filter)),
+        checked = checked,
+        enabled = enabled,
+        onChange = onChange,
+    )
+}
+
+@Composable
+fun SwitchRow(title: String, detail: String, checked: Boolean, onChange: (Boolean) -> Unit, enabled: Boolean = true) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.weight(1f).padding(end = 16.dp)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                detail,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(checked = checked, onCheckedChange = onChange, enabled = enabled)
     }
 }

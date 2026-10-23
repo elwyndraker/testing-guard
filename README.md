@@ -1,6 +1,8 @@
 # PrivacyGuard
 
-An Android app that blocks ad and tracker domains on the whole phone, using a local VPN that filters DNS lookups on the device. No root, no account, no server: nothing leaves the phone.
+An Android app that blocks known trackers, phone telemetry, malware, phishing and scam domains on the whole phone, using a local VPN that filters DNS lookups on the device. No root, no account, no server: nothing leaves the phone.
+
+PrivacyGuard is made for Google Play, which doesn't allow VPN apps to block ads. It never blocks ads: every downloaded list is cleaned of the domains on EasyList, an ads-only list (see [Blocklist sources](#blocklist-sources)).
 
 <p>
   <img src="screenshots/home.png" width="200" alt="Home screen with protection on">
@@ -8,17 +10,17 @@ An Android app that blocks ad and tracker domains on the whole phone, using a lo
   <img src="screenshots/filters.png" width="200" alt="Filters screen">
 </p>
 
-Screenshots are from version 1.2 on an Android 17 emulator after browsing cnn.com with protection on. Version 1.3 shows about 1 million domains on the Filters screen and links to the [blocklist sources](#blocklist-sources) instead of StevenBlack.
+Screenshots are from an older version (1.2) that still blocked ads; new ones for the Play listing go in `play-store/screenshots/`.
 
 ## Download
 
-**[Download the latest APK](https://github.com/elwyndraker/testing-guard/releases/latest)**: open this link on your Android phone, tap `PrivacyGuard-v….apk` under **Assets**, then open the downloaded file to install. See [Install the app without Android Studio](#install-the-app-without-android-studio) for details.
+PrivacyGuard will be published on Google Play only. Until then, [build it from source](#build-from-source). GitHub releases no longer include an APK; the old `v0`–`v0.2` APKs are test builds signed with the upload key, so a phone that has one installed must uninstall it before installing from Play.
 
 ## Contents
 
 - [Features](#features)
 - [How it works](#how-it-works)
-- [Install the app without Android Studio](#install-the-app-without-android-studio)
+- [Install a test build without Android Studio](#install-a-test-build-without-android-studio)
 - [Build from source](#build-from-source)
 - [Run it on a phone or an emulator](#run-it-on-a-phone-or-an-emulator)
 - [Testing](#testing)
@@ -28,29 +30,42 @@ Screenshots are from version 1.2 on an Android 17 emulator after browsing cnn.co
 - [Publishing on Google Play](#publishing-on-google-play)
 - [Blocklist sources](#blocklist-sources)
 - [Credits](#credits)
+- [License](#license)
 
 ## Features
 
 | Feature | Where |
 | --- | --- |
-| Blocks about 1.1 million ad, tracker and scam domains, merged from [19 public lists](#blocklist-sources), in every app and browser | Runs in the background as a local VPN |
-| One switch to turn protection on and off, plus a "blocked today" counter | **Home** screen |
-| Live list of blocked domains, newest first; repeats are grouped ("Blocked 4 times") | **Blocked** screen |
-| Blocklist update on demand, automatically when older than 7 days, and right after an app update that changes the sources | **Filters** screen |
-| Works offline on first launch (a copy of the anti-AD list ships inside the app; the full merged list downloads on first launch) | `app/src/main/assets/hosts.txt` |
+| Blocks known trackers, phone maker telemetry, malware, phishing and scam domains from [public lists](#blocklist-sources), in every app and browser. Free and always on | Runs in the background as a local VPN |
+| Never blocks ads: domains on EasyList are removed from every list when it is downloaded | `Blocklist.ADS_EXCLUSION_SOURCE` |
+| One switch to turn protection on and off, plus a "blocked today" counter | **Home** screen, and a Quick Settings tile |
+| Live list of blocked domains, newest first; repeats are grouped ("Blocked 4 times"). Adult domains show as "Adult site blocked" | **Blocked** screen |
+| List update on demand, automatically when older than 7 days, and right after an app update that changes the sources | **Filters** screen |
+| Public DNS fallback (1.1.1.1 / 8.8.8.8), off by default | **Filters** screen |
+| Licences and list credits | **Filters** screen |
+| Works offline on first launch (a copy of the free list ships inside the app) | `app/src/main/assets/standard.txt` |
 | Follows Wi-Fi ↔ mobile data changes (reads the current network for every lookup) | `UpstreamDns.resolve()` |
 | Explains the VPN before Android's permission popup (required by Google Play) | First time the switch is turned on |
 | Diagnostics (lookups answered/failed, DNS route, network, last problem) and a **Copy details** button for bug reports | **Home** screen |
 | Safety switch: turns itself off and explains why if lookups keep failing for 30 s on the same network | `PrivacyVpnService.giveUp()` |
 
+**Pro** (one-time purchase through Google Play Billing, product `pro_unlock`), on the **Pro** and **Filters** screens:
+
+| Feature | Where |
+| --- | --- |
+| Filters: adult content, gambling, filter bypass (public DoH/VPN/proxy services), newly registered domains, cryptojacking, stalkerware | `Filter.kt` |
+| PIN lock for turning protection off and changing filters (a salted hash is saved, never the PIN) | `PinLock.kt` |
+| My rules: block or allow single domains; allow wins over every list | `MyRules.kt` |
+| Blocked history for the last 7 days, saved on the phone only | `History.kt` |
+
 Minimum Android version: 8.0 (API 26). Target: API 36.
 
 ## How it works
 
-Before an app loads anything from the internet, it asks a DNS server for the address of a name such as `ads.example.com`. PrivacyGuard sits in the middle of those lookups:
+Before an app loads anything from the internet, it asks a DNS server for the address of a name such as `tracker.example.com`. PrivacyGuard sits in the middle of those lookups:
 
 ```
- App asks for "ads.example.com"
+ App asks for "tracker.example.com"
           │
           ▼
  Android sends the lookup to the VPN's DNS server, 10.111.222.2
@@ -60,12 +75,12 @@ Before an app loads anything from the internet, it asks a DNS server for the add
  PrivacyVpnService reads the packet from the tunnel
           │
    ┌──────┴────────────────────────┐
-   │ on the blocklist?             │
+   │ on a blocklist?               │
    ├── yes ────────────────────────┼── no ──────────────────────────────┐
    ▼                               │                                    ▼
  Reply "does not exist" (NXDOMAIN)  │        Forward the lookup unchanged to the
- → the ad or tracker never loads    │        real network's DNS (Android's resolver;
- → shown on the Blocked screen      │        public DNS as a last resort) and pass the
+ → the tracker never loads         │        real network's DNS (Android's resolver;
+ → shown on the Blocked screen      │        public DNS only if turned on) and pass the
                                     │        real answer back
 ```
 
@@ -74,18 +89,20 @@ Key design choices:
 - **DNS-only tunnel.** The VPN routes only the fake DNS address (`10.111.222.2/32`), so normal traffic goes straight to the internet. This keeps the app fast and light on battery, and the packet code only has to handle small IPv4/UDP DNS packets.
 - **No DNS library.** Reading a domain name and building an NXDOMAIN reply takes about 40 lines (`DnsUtils.kt`), which keeps the code easy to read and explain.
 - **The app excludes itself from its own VPN** (`addDisallowedApplication`), so forwarded lookups and blocklist downloads go directly to the real network.
-- **Parent-domain matching.** If `doubleclick.net` is listed, `stats.g.doubleclick.net` is blocked too.
+- **Parent-domain matching.** If `example-tracker.com` is listed, `stats.example-tracker.com` is blocked too.
 
-## Install the app without Android Studio
+## Install a test build without Android Studio
 
-You don't need USB debugging or Developer options to try the app:
+You don't need USB debugging or Developer options to try a test build:
 
-1. Download the APK from the [latest release](https://github.com/elwyndraker/testing-guard/releases/latest), or build it yourself (see below).
+1. Build the APK yourself (see below), or ask the team for one.
 2. Copy the `.apk` file to the phone (USB file transfer, Google Drive, Telegram "Saved messages", email, …).
 3. Open the file on the phone with its file manager and tap **Install**. Android asks you to allow "Install unknown apps" for that file manager once; allow it.
 4. Open PrivacyGuard and turn the switch on.
 
 On some phones (Xiaomi, Oppo, Vivo, Realme, Huawei), the system may also show a security scan or ask you to confirm again. That's normal for apps installed from outside the store. These phones also tend to stop background apps aggressively. If protection turns off by itself, open the phone's battery settings for PrivacyGuard and choose "No restrictions" / "Allow background activity".
+
+Pro can't be bought in a test build installed this way; Google Play Billing only works for copies installed from Play (use a [licence tester](https://developer.android.com/google/play/billing/test) on the internal testing track).
 
 ## Build from source
 
@@ -168,7 +185,7 @@ keytool -genkeypair -v -keystore privacyguard-upload.jks -alias privacyguard \
 
 ### Automatic releases
 
-`.github/workflows/release.yml` builds the signed APK and AAB on GitHub and publishes them as a release whenever you push a version tag. You don't need your own computer for releases once the key is set up.
+`.github/workflows/release.yml` runs the unit tests and builds the signed AAB on GitHub whenever you push a version tag. The AAB is kept for 90 days as a workflow artifact, ready to upload to the Play Console; no APK is published, because the app is distributed through Google Play only. You don't need your own computer for releases once the key is set up.
 
 **One-time setup: store the signing key as GitHub secrets.**
 
@@ -189,17 +206,18 @@ keytool -genkeypair -v -keystore privacyguard-upload.jks -alias privacyguard \
 
 **Each release:**
 
-1. Raise `versionCode` by 1 and set `versionName` in `app/build.gradle.kts` (for example `1.4`), commit and push.
-2. Tag that commit with the same version and push the tag:
+1. Run `python3 scripts/build_builtin_list.py` so the built-in list in `assets/standard.txt` is fresh.
+2. Raise `versionCode` by 1 and set `versionName` in `app/build.gradle.kts` (for example `0.3`), commit and push.
+3. Tag that commit with the same version and push the tag:
    ```bash
-   git tag v1.4
-   git push origin v1.4
+   git tag v0.3
+   git push origin v0.3
    ```
-3. After a few minutes the release appears under **Releases** with `PrivacyGuard-v1.4.apk` (for phones) and `PrivacyGuard-v1.4.aab` (for Google Play). Edit the release afterwards to write your own notes.
+4. After a few minutes, open **Actions → Release →** the run for the tag, and download `PrivacyGuard-v0.3` under **Artifacts**. It contains `PrivacyGuard-v0.3.aab`; upload that to the Play Console.
 
-You can also draft the release on GitHub first with your notes and a new tag; when you publish it, the workflow adds the files to it. The workflow stops without publishing if the tag doesn't match `versionName`, if a unit test fails, or if the secrets are missing.
+The workflow stops without an artifact if the tag doesn't match `versionName`, if a unit test fails, if the secrets are missing or if the AAB isn't signed.
 
-Versions used: Android Gradle Plugin 9.4.1, Gradle 9.7.1, Kotlin 2.4.21, Compose BOM 2026.09.00, compileSdk 37. All are in [`gradle/libs.versions.toml`](gradle/libs.versions.toml).
+Versions used: Android Gradle Plugin 9.4.1, Gradle 9.7.1, Kotlin 2.4.21, Compose BOM 2026.09.00, Play Billing 9.1.0, compileSdk 37. All are in [`gradle/libs.versions.toml`](gradle/libs.versions.toml).
 
 ## Run it on a phone or an emulator
 
@@ -230,7 +248,11 @@ The emulator needs about 6–12 GB free disk space. To keep it on another disk, 
 | Test class | What it checks |
 | --- | --- |
 | `PacketUtilsTest` | Reading the domain from IPv4/UDP DNS packets, ignoring non-DNS traffic, NXDOMAIN replies keep the id and question, answer packets swap addresses and ports with a valid IPv4 checksum |
-| `BlocklistTest` | Parsing every list format (hosts files with `0.0.0.0`/`127.0.0.1`/`::`, plain domains, `*.` wildcards, adblock `||domain^` rules; comments, localhost and other adblock rules skipped) and parent-domain matching |
+| `BlocklistTest` | Parsing every list format (hosts files with `0.0.0.0`/`127.0.0.1`/`::`, plain domains, `*.` wildcards, adblock `||domain^` rules; comments, localhost and other adblock rules skipped), parent-domain matching, ads-exclusion skipping, no ads list in the sources, Pro filters and My rules only working with Pro, adult names hidden |
+| `MyRulesTest` | Cleaning up what people paste as a rule (URLs, `*.`, case), rejecting non-domains |
+| `PinLockTest` | PIN hashing and salting, valid PIN lengths, no PIN needed without Pro |
+| `HistoryTest` | Saving and reading a day's counts, skipping broken lines, merging counts, day totals |
+| `BillingTest` | Pro from purchase states: purchased, pending, refunded, other products |
 | `DomainSetTest` | The packed domain set: no duplicates, growth to 50,000 entries, case-insensitive suffix lookups, saving one domain per line |
 | `BlockedLogTest` | Repeated blocks within a minute share one row; later ones get a new row |
 | `FirstSuccessTest` | The DNS route race: fast route wins, a failed route starts the next at once, a slow route is overtaken, all-fail and timeout return quickly |
@@ -240,11 +262,33 @@ The emulator needs about 6–12 GB free disk space. To keep it on another disk, 
 With protection on, run these from a computer with `adb` (or just open the sites in Chrome):
 
 ```bash
-adb shell ping -c 1 doubleclick.net   # expected: "unknown host"  (blocked)
-adb shell ping -c 1 google.com        # expected: "PING google.com (…)"  (allowed)
+adb shell ping -c 1 google-analytics.com   # expected: "unknown host"  (blocked, tracker)
+adb shell ping -c 1 tracking.miui.com      # expected: "unknown host"  (blocked, phone telemetry)
+adb shell ping -c 1 google.com             # expected: "PING google.com (…)"  (allowed)
 ```
 
-Results from the Android 17 emulator run on Oct 10, 2026:
+**Checklist for the Play version (not yet run on a device).** Run it on real phones (a Xiaomi, a Pixel and one more brand) before the first Play upload:
+
+| Check | Result |
+| --- | --- |
+| Switch on → explanation dialog → notification permission → Android VPN popup; cancelling the popup leaves protection off | Not run |
+| Trackers above blocked, `google.com` allowed; Blocked screen lists them | Not run |
+| Update now downloads the lists; the date and domain count change | Not run |
+| Quick Settings tile turns protection on and off | Not run |
+| Public DNS fallback off by default; turning it on works | Not run |
+| Licences and list credits dialog opens | Not run |
+| Pro purchase with a licence tester (internal testing track); Pro filters, PIN, My rules and history unlock | Not run |
+| Refund in the Play Console removes Pro | Not run |
+| Adult filter on: blocked adult sites show as "Adult site blocked", never by name | Not run |
+| PIN set: turning protection off and changing filters ask for it | Not run |
+| Wi-Fi ↔ mobile data, 30 minutes screen off, a full day of normal use | Not run |
+| No crashes in the crash log | Not run |
+
+On Oct 23, 2026 the `Medium_Phone_API_37.0` emulator didn't finish booting on a 16 GB laptop (the image asks for 16 GB of RAM); use a real phone or a lighter system image.
+
+The results below are from older versions that still blocked ads. The DNS and networking code they test hasn't changed.
+
+**Emulator run of v1.2, Oct 10, 2026 (Android 17):**
 
 | Check | Result |
 | --- | --- |
@@ -276,36 +320,50 @@ With *all* of the network's DNS servers dead, the app falls back to public DNS a
 | 4 rapid Wi-Fi off/on flips | 46 answered, 0 failed; protection stayed on |
 | Dead first DNS server | ~0.6 s per lookup (v1.0: 8 s), 0 failed |
 
-Still to test on real phones: 30 minutes with the screen off, another VPN app taking over, and a full day of normal use. See the testing checklist in the project plan.
+Still to test on real phones: another VPN app taking over.
 
 ## Project structure
 
 ```
 app/src/main/
-├── AndroidManifest.xml          permissions + the VPN service declaration
-├── assets/hosts.txt             built-in copy of the anti-AD list (offline fallback)
+├── AndroidManifest.xml          permissions, the VPN service and the Quick Settings tile
+├── assets/standard.txt          built-in copy of the free list (offline fallback; scripts/build_builtin_list.py)
 ├── java/com/pg/privacyguard/
 │   ├── MainActivity.kt          entry point, sets up Compose
 │   ├── BuildConfigInfo.kt       reads the app version for the About dialog
+│   ├── billing/Billing.kt       Google Play Billing: buy and restore Pro
 │   ├── data/
-│   │   ├── Blocklist.kt         the list sources; loads, parses, merges, updates and checks domains
-│   │   ├── DomainSet.kt         memory-saving set of ~1 million domains (packed bytes + hash table)
+│   │   ├── Filter.kt            the filters (free + Pro) and their list sources
+│   │   ├── Blocklist.kt         loads, parses, updates and checks domains, one set per filter
+│   │   ├── DomainSet.kt         memory-saving domain set (packed bytes + hash table)
 │   │   ├── BlockedLog.kt        in-memory list of blocked domains + today's count
-│   │   └── Settings.kt          DataStore: last update time, explanation accepted
+│   │   ├── History.kt           Pro: 7 days of blocked counts, on the phone only
+│   │   ├── MyRules.kt           Pro: the user's own block and allow rules
+│   │   ├── PinLock.kt           Pro: PIN lock (salted hash)
+│   │   ├── Pro.kt               whether Pro is unlocked
+│   │   └── Settings.kt          DataStore: filters, rules, update times, fallback, disclosure
 │   ├── vpn/
 │   │   ├── PrivacyVpnService.kt the VPN: tunnel, packet loop, forwarding, notification
 │   │   ├── VpnController.kt     start/stop + the running state the UI observes
+│   │   ├── ProtectionTileService.kt  Quick Settings tile
+│   │   ├── UpstreamDns.kt       answers allowed lookups (see FirstSuccess.kt)
 │   │   ├── PacketUtils.kt       parse IPv4/UDP packets, build answer packets
 │   │   └── DnsUtils.kt          read DNS questions, build NXDOMAIN replies
 │   └── ui/
 │       ├── PrivacyGuardApp.kt   bottom navigation + weekly auto-update
 │       ├── HomeScreen.kt        switch, status, counter, permissions flow
 │       ├── BlockedScreen.kt     blocked domains list
-│       ├── FiltersScreen.kt     list size, Update now, About, links
+│       ├── FiltersScreen.kt     filters, Update now, DNS fallback, About, credits
+│       ├── ProScreen.kt         purchase, PIN lock, My rules, history
+│       ├── PinDialogs.kt        PIN entry dialogs
+│       ├── Credits.kt           list credits and licences
+│       ├── AppUpdateBanner.kt   Google Play in-app updates
 │       └── theme/Theme.kt       colors
 └── res/                         strings, icons, theme
 app/src/test/                    unit tests
 docs/index.html                  privacy policy page (for GitHub Pages)
+play-store/                      Play plan and listing texts
+scripts/                         build_builtin_list.py
 screenshots/                     images used in this README
 ```
 
@@ -317,9 +375,9 @@ A good reading order for new developers:
 2. **`PrivacyVpnService.startTunnel()`**: loads the blocklist, reads the real DNS server, then builds the tunnel with `VpnService.Builder`. Note `addRoute("10.111.222.2", 32)`: that single route is what makes the tunnel DNS-only.
 3. **`PrivacyVpnService.runLoop()`**: the tunnel file descriptor is non-blocking, so the loop waits with `Os.poll` and a 1-second timeout instead of spinning. The timeout also lets it notice a stop request.
 4. **`handlePacket()`**: `PacketUtils.parseDnsQuery` → `Blocklist.isBlocked` → either `DnsUtils.nxdomain` (blocked) or `UpstreamDns.resolve()` in its own coroutine (allowed) → `PacketUtils.buildResponse` → write back to the tunnel.
-5. **`UpstreamDns.kt`** + **`FirstSuccess.kt`**: how allowed lookups are answered, as a staggered race. First Android's own resolver for the real network (`DnsResolver.rawQuery`, Android 10+; it already knows which servers work and handles IPv6 and Private DNS). After 0.6 s, the network's DNS servers directly, over that network. After 1.2 s, the public fallbacks 1.1.1.1 and 8.8.8.8. If one route fails, the next starts at once; the first answer wins. The network is read fresh for every lookup. Answers must be fast: apps give up on a lookup within a few seconds.
+5. **`UpstreamDns.kt`** + **`FirstSuccess.kt`**: how allowed lookups are answered, as a staggered race. First Android's own resolver for the real network (`DnsResolver.rawQuery`, Android 10+; it already knows which servers work and handles IPv6 and Private DNS). After 0.6 s, the network's DNS servers directly, over that network. After 1.2 s, the public fallbacks 1.1.1.1 and 8.8.8.8, only if the user turned on Public DNS fallback. If one route fails, the next starts at once; the first answer wins. The network is read fresh for every lookup. Answers must be fast: apps give up on a lookup within a few seconds.
 6. **`PacketUtils.buildResponse()`**: builds a fresh IPv4 + UDP packet with the addresses and ports swapped. The UDP checksum is 0, which IPv4 allows.
-7. **`Blocklist.kt`** + **`DomainSet.kt`**: a hash lookup that walks up parent domains. An update downloads every source in `Blocklist.SOURCES` and merges them, skipping sources that fail (the Filters screen says how many). The merged list is saved as one domain per line and only replaces the current list if it has more than 10,000 domains, so a broken download never wipes the list. About a million domains would need well over 100 MB as a `HashSet<String>`, so `DomainSet` packs them into one byte array plus an int hash table (~35 MB); the manifest also sets `largeHeap` because an update builds the new list while the old one is still in use.
+7. **`Filter.kt`** + **`Blocklist.kt`** + **`DomainSet.kt`**: one domain set per filter, checked with a hash lookup that walks up parent domains (My rules' allow list first). An update first downloads EasyList (the ads exclusion list), then each turned-on filter's sources, merging them and skipping every domain on EasyList and sources that fail (the Filters screen says how many). Each filter is saved as its own file, one domain per line, and only replaces the current one if it has at least the filter's `minDomains`, so a broken download never wipes a list. Large lists would need well over 100 MB as a `HashSet<String>`, so `DomainSet` packs them into one byte array plus an int hash table; the manifest also sets `largeHeap` because an update builds the new list while the old one is still in use.
 
 Things that look odd but are deliberate:
 
@@ -330,28 +388,33 @@ Things that look odd but are deliberate:
 ## Known limits
 
 - **Private DNS:** if Settings → Network → Private DNS is set to a provider hostname (for example `dns.google`), Android sends lookups around the VPN and nothing is blocked. "Off" and "Automatic" both work. The Home screen shows this tip.
-- **Ads served from the content's own domain** (YouTube, Facebook, Instagram) can't be blocked by DNS filtering.
 - **IPv4 DNS only.** Android sends lookups to the VPN's IPv4 DNS address, so this covers normal use. DNS over TCP (rare, used for very large replies) isn't handled.
-- **No allow-list.** If a site breaks because one of its domains is on the list, turn protection off for that site.
-- **The Blocked list lives in memory** and empties when the app is fully closed.
+- **Allow-list is Pro.** If a site breaks because one of its domains is on a list, check the **Blocked** screen; Pro users can allow that domain under **My rules**, others can turn protection off for that site.
+- **The PIN lock is not a full parental control.** It protects the app's own switch and settings, but someone can still turn the VPN off in Android's settings or uninstall the app. The Pro screen says so.
+- **Pro needs Google Play.** Billing only works for copies installed from Play; test builds from an APK can't unlock Pro.
+- **The Blocked list lives in memory** and empties when the app is fully closed (Pro keeps 7 days of counts on the phone).
 
 ## Publishing on Google Play
 
-Before the first upload:
+Not published yet. Before the first upload:
 
 1. The privacy policy is live at <https://elwyndraker.github.io/testing-guard/> (GitHub Pages, from `docs/index.html`); the app links to it from the Filters screen.
-2. Build the bundle with `./gradlew bundleRelease` → `app/build/outputs/bundle/release/app-release.aab`, signed with the key described in [Release builds and signing](#release-builds-and-signing). Use that key as the Play upload key and keep it backed up.
-3. Raise `versionCode` in `app/build.gradle.kts` before every upload.
+2. Get the signed AAB from the [release workflow](#automatic-releases), or build it with `./gradlew bundleRelease` → `app/build/outputs/bundle/release/app-release.aab`.
+3. Turn on **Play App Signing**: Google keeps the key that signs the app for users, and `privacyguard-upload.jks` becomes the **upload key**. Keep it backed up.
+4. Create the in-app product `pro_unlock` (one-time, non-consumable) under **Monetize → Products**. It must match `Pro.PRODUCT_ID`. The price isn't decided yet.
+5. Fill in the store listing and the forms (Ads, App access, Content rating, Target audience, Data safety, VPN declaration) from [`play-store/listing.md`](play-store/listing.md).
+6. Upload to **Internal testing** first, add licence testers, and run the [device checklist](#manual-test-on-a-device-or-emulator). A new personal developer account then needs a closed test with 12 testers for 14 days before production.
+7. Raise `versionCode` in `app/build.gradle.kts` before every upload.
 
-Play Console answers (data safety, VpnService declaration, store listing) are in the project plan document.
+The reasons behind each answer, and why the app can't block ads or use other payment providers on Play, are in [`play-store/PLAY_VERSION_PLAN.md`](play-store/PLAY_VERSION_PLAN.md).
 
 ### In-app updates
 
 `AppUpdateBanner.kt` uses Google Play's [in-app updates](https://developer.android.com/guide/playcore/in-app-updates) (flexible flow). When Play has a newer version, a card at the top of every screen offers **Update**; Play shows its own update screen and downloads in the background, then the card offers **Restart** to install. The app never downloads or installs APKs itself, which Play policy forbids.
 
-The card only appears for copies installed from Google Play. Until the app is on Play, and for APKs installed from GitHub releases, it simply never shows. To try it before the public release:
+The card only appears for copies installed from Google Play. For test builds installed from an APK it simply never shows. To try it before the public release:
 
-1. Upload a build (for example version 1.3, code 4) to the **Internal testing** track and add yourself as a tester.
+1. Upload a build to the **Internal testing** track and add yourself as a tester.
 2. Install it on a phone from the tester link in the Play Store.
 3. Upload a build with a higher `versionCode` to the same track.
 4. Open the Play Store page once (so Play notices the new version), then open PrivacyGuard: the update card appears.
@@ -360,33 +423,31 @@ Google's [internal app sharing](https://support.google.com/googleplay/android-de
 
 ## Blocklist sources
 
-The app downloads and merges these lists (see `Blocklist.SOURCES`). Each list keeps its own license; the app only downloads them on the phone and doesn't redistribute them, except the anti-AD copy in `assets/` (MIT License, Copyright (c) 2017-2019 gently).
+The free filter (always on) merges these lists; the Pro filters are listed below. See `Filter.kt`. Each list keeps its own licence; `assets/standard.txt` bundles a copy of the free lists, which is allowed because the app is GPL-3.0. The same credits are shown in the app under **Filters → Licences and list credits**.
 
-| List | Format |
-| --- | --- |
-| [jdlingyu/ad-wars](https://github.com/jdlingyu/ad-wars) | hosts |
-| [r-a-y/mobile-hosts](https://github.com/r-a-y/mobile-hosts) (AdguardMobileSpyware) | hosts |
-| [FadeMind/hosts.extras](https://github.com/FadeMind/hosts.extras) (add.2o7Net) | hosts |
-| [privacy-protection-tools/anti-AD](https://github.com/privacy-protection-tools/anti-AD) | domains |
-| [AdroitAdorKhan/antipopads-re](https://github.com/AdroitAdorKhan/antipopads-re) | domains |
-| [hagezi/dns-blocklists](https://github.com/hagezi/dns-blocklists) (Pro, wildcard) | wildcard |
-| [hagezi/dns-blocklists](https://github.com/hagezi/dns-blocklists) (Threat Intelligence Feeds mini) | domains |
-| [hagezi/dns-blocklists](https://github.com/hagezi/dns-blocklists) (Fake) | domains |
-| [EasyPrivacy](https://easylist.to/) | adblock (domain rules only) |
-| [hBlock](https://hblock.molinero.dev/) | domains |
-| [rentianyu/Ad-set-hosts](https://github.com/rentianyu/Ad-set-hosts) | hosts |
-| [TG-Twilight/AWAvenue-Ads-Rule](https://github.com/TG-Twilight/AWAvenue-Ads-Rule) | adblock (domain rules only) |
-| [jerryn70/GoodbyeAds](https://github.com/jerryn70/GoodbyeAds) | hosts |
-| [lightswitch05/hosts](https://www.github.developerdan.com/hosts/) (ads and tracking extended) | hosts |
-| [NoTrack trackers](https://gitlab.com/quidsup/notrack-blocklists) | domains |
-| [notracking/hosts-blocklists](https://github.com/notracking/hosts-blocklists) | hosts |
-| [FLOSSBOXIN hosts](https://hosts.flossboxin.org.in/) | hosts |
-| [bongochong/CombinedPrivacyBlockLists](https://github.com/bongochong/CombinedPrivacyBlockLists) | wildcard |
-| [IndianList](https://easylist.to/) | adblock (domain rules only) |
+| Filter | List | Licence |
+| --- | --- | --- |
+| Free | [EasyPrivacy](https://easylist.to/) (domain rules only) | GPL-3.0 / CC BY-SA 3.0 |
+| Free | [r-a-y/mobile-hosts](https://github.com/r-a-y/mobile-hosts) (AdguardMobileSpyware) | GPL-3.0 |
+| Free | [FadeMind/hosts.extras](https://github.com/FadeMind/hosts.extras) (add.2o7Net) | MIT |
+| Free | [NoTrack trackers](https://gitlab.com/quidsup/notrack-blocklists) | GPL-3.0 |
+| Free | [HaGeZi](https://github.com/hagezi/dns-blocklists) Native Tracker: Xiaomi, Samsung, Huawei, OPPO/realme, vivo | GPL-3.0 |
+| Free | [HaGeZi](https://github.com/hagezi/dns-blocklists) Threat Intelligence Feeds (mini) and Fake | GPL-3.0 |
+| Pro: Adult content | [HaGeZi](https://github.com/hagezi/dns-blocklists) NSFW | GPL-3.0 |
+| Pro: Gambling | [HaGeZi](https://github.com/hagezi/dns-blocklists) Gambling (medium) | GPL-3.0 |
+| Pro: Block filter bypass | [HaGeZi](https://github.com/hagezi/dns-blocklists) DoH/VPN/Proxy bypass | GPL-3.0 |
+| Pro: Newly registered domains | [HaGeZi NRD](https://github.com/hagezi/nrd) (DGA, 7 days) | GPL-3.0 |
+| Pro: Cryptojacking | [NoCoin adblock list](https://github.com/hoshsadiq/adblock-nocoin-list) | MIT |
+| Pro: Stalkerware | [Echap stalkerware indicators](https://github.com/AssoEchap/stalkerware-indicators) | CC BY 4.0 |
+| Exclusion only | [EasyList](https://easylist.to/): its domains are removed from all of the above, never blocked | GPL-3.0 / CC BY-SA 3.0 |
 
-Adblock lists also contain rules for paths, element hiding and exceptions (`@@`); DNS filtering can't apply those, so only plain `||domain^` rules are used. Some of these lists are aggressive: if an app or site breaks, check the **Blocked** screen to see which domain was blocked.
+Adblock lists also contain rules for paths, element hiding and exceptions (`@@`); DNS filtering can't apply those, so only plain `||domain^` rules are used. If an app or site breaks, check the **Blocked** screen to see which domain was blocked.
 
 ## Credits
 
 - Blocklists: see [Blocklist sources](#blocklist-sources).
 - Design ideas from [DNS66](https://github.com/julian-klode/dns66) (GPL-3.0; no code copied).
+
+## License
+
+PrivacyGuard is free software under the [GNU General Public License v3.0](LICENSE). The blocklists keep their own licences (see [Blocklist sources](#blocklist-sources)).

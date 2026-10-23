@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.pg.privacyguard.R
+import com.pg.privacyguard.billing.Billing
 import com.pg.privacyguard.data.Blocklist
 import com.pg.privacyguard.data.Settings
 import kotlinx.coroutines.CancellationException
@@ -33,6 +34,7 @@ private enum class Tab(@StringRes val label: Int, @DrawableRes val icon: Int) {
     Home(R.string.tab_home, R.drawable.ic_shield),
     Blocked(R.string.tab_blocked, R.drawable.ic_list),
     Filters(R.string.tab_filters, R.drawable.ic_filter),
+    Pro(R.string.tab_pro, R.drawable.ic_star),
 }
 
 @Composable
@@ -42,10 +44,12 @@ fun PrivacyGuardApp() {
 
     LaunchedEffect(Unit) {
         Blocklist.load(context)
+        // Restores Pro on a new phone and removes it after a refund.
+        Billing.connect(context)
         // Automatic weekly update, and right away when the list of sources has changed
         // (e.g. after an app update). Failure is fine: the current list keeps working.
         val lastUpdated = Settings.lastUpdated(context).first()
-        val sourcesChanged = Settings.sourcesHash(context).first() != Blocklist.SOURCES.hashCode()
+        val sourcesChanged = Settings.sourcesHash(context).first() != Blocklist.sourcesHash
         if (sourcesChanged || System.currentTimeMillis() - lastUpdated > WEEK_MS) {
             try {
                 Blocklist.update(context)
@@ -78,6 +82,7 @@ fun PrivacyGuardApp() {
                     Tab.Home -> HomeScreen()
                     Tab.Blocked -> BlockedScreen()
                     Tab.Filters -> FiltersScreen()
+                    Tab.Pro -> ProScreen()
                 }
             }
         }

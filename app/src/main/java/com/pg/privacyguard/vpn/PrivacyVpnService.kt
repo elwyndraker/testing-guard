@@ -24,11 +24,19 @@ import com.pg.privacyguard.MainActivity
 import com.pg.privacyguard.R
 import com.pg.privacyguard.data.BlockedLog
 import com.pg.privacyguard.data.Blocklist
+import com.pg.privacyguard.data.History
+import com.pg.privacyguard.data.PinLock
+import com.pg.privacyguard.data.Pro
+import com.pg.privacyguard.data.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -57,6 +65,7 @@ class PrivacyVpnService : VpnService() {
         // clock, so a normal Wi-Fi/mobile data switch never trips it.
         private const val GIVE_UP_AFTER_MS = 30_000L
         private const val GIVE_UP_MIN_FAILURES = 10
+        private const val HISTORY_FLUSH_MS = 60_000L
     }
 
     /** One open tunnel. Its own flag means an old loop can never keep running on a new tunnel. */
@@ -116,7 +125,9 @@ class PrivacyVpnService : VpnService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP) {
-            shutdown()
+            // With a PIN set, only the app (after the PIN) may turn protection off. The
+            // notification hides its Turn off button then; this catches an old notification.
+            if (PinLock.isOpen()) shutdown()
             return START_NOT_STICKY
         }
         // Anything else, including a null intent from Android's Always-on VPN, means "start".
@@ -137,6 +148,17 @@ class PrivacyVpnService : VpnService() {
     }
 
     private fun startInForeground() {
+        val notification = buildNotification()
+        if (Build.VERSION.SDK_INT >= 34) {
+            ServiceCompat.startForeground(
+                this, NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED
+            )
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
+    }
+
+    private fun buildNotification(): android.app.Notification {
         val manager = getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(
             NotificationChannel(CHANNEL_ID, getString(R.string.channel_name), NotificationManager.IMPORTANCE_LOW)
@@ -148,31 +170,25 @@ class PrivacyVpnService : VpnService() {
             this, 1, Intent(this, PrivacyVpnService::class.java).setAction(ACTION_STOP),
             PendingIntent.FLAG_IMMUTABLE
         )
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+        return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_shield)
             .setContentTitle(getString(R.string.notification_title))
             .setContentText(getString(R.string.notification_text))
             .setContentIntent(openApp)
-            .addAction(0, getString(R.string.turn_off), stop)
+            .also { if (!PinLock.isLocked) it.addAction(0, getString(R.string.turn_off), stop) }
             .setOngoing(true)
             .build()
-
-        if (Build.VERSION.SDK_INT >= 34) {
-            ServiceCompat.startForeground(
-                this, NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED
-            )
-        } else {
-            startForeground(NOTIFICATION_ID, notification)
-        }
     }
 
     private fun startTunnel() {
         starting = true
         val myGeneration = ++generation
         VpnController.setRunning(true)
+        ProtectionTileService.refresh(this)
         scope.launch {
             // Load the list here too: Android can start this service without the app's screen.
             Blocklist.load(applicationContext)
+            upstream.publicFallback = Settings.publicDnsFallback(applicationContext).first()
 
             upstream.lastKnownNetwork = connectivity.activeNetwork
             VpnController.resetStats()
@@ -211,8 +227,28 @@ class PrivacyVpnService : VpnService() {
                 connectivity.registerDefaultNetworkCallback(networkCallback)
                 callbackRegistered = true
                 thread(name = "PrivacyGuard-tunnel") { runLoop(newTunnel) }
+                watchSettings()
                 Log.i(TAG, "Tunnel open on ${upstream.networkType()}, ${upstream.networkDnsSummary()}, " +
                     "${Blocklist.size.value} domains")
+            }
+        }
+    }
+
+    /** Follows settings changed in the app while protection is on. Ends with [shutdown]. */
+    private fun watchSettings() {
+        scope.launch {
+            Settings.publicDnsFallback(applicationContext).collect { upstream.publicFallback = it }
+        }
+        // Show or hide the notification's Turn off button when a PIN is set or removed.
+        scope.launch {
+            PinLock.pinHash.combine(Pro.active) { _, _ -> PinLock.isLocked }.collect {
+                getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, buildNotification())
+            }
+        }
+        scope.launch {
+            while (isActive) {
+                delay(HISTORY_FLUSH_MS)
+                History.flush(applicationContext)
             }
         }
     }
@@ -256,8 +292,10 @@ class PrivacyVpnService : VpnService() {
 
     private fun handlePacket(packet: ByteArray, output: FileOutputStream) {
         val query = PacketUtils.parseDnsQuery(packet) ?: return
-        if (Blocklist.isBlocked(query.domain)) {
-            BlockedLog.add(query.domain)
+        val filter = Blocklist.check(query.domain)
+        if (filter != null) {
+            BlockedLog.add(query.domain, filter)
+            if (Pro.active.value) History.record(query.domain, filter)
             val answer = DnsUtils.nxdomain(query.dns, query.questionEnd)
             write(output, PacketUtils.buildResponse(packet, query.ipHeaderLength, answer))
         } else {
@@ -327,6 +365,7 @@ class PrivacyVpnService : VpnService() {
     private fun shutdown() {
         generation++
         VpnController.setRunning(false)
+        ProtectionTileService.refresh(this)
         tunnel?.active?.set(false) // the loop closes the tunnel within a second
         tunnel = null
         if (callbackRegistered) {
@@ -337,6 +376,7 @@ class PrivacyVpnService : VpnService() {
             callbackRegistered = false
         }
         scope.coroutineContext.cancelChildren()
+        CoroutineScope(Dispatchers.IO).launch { History.flush(applicationContext) }
         starting = false
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         stopSelf()

@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pg.privacyguard.R
 import com.pg.privacyguard.data.BlockedLog
+import com.pg.privacyguard.data.Filter
 import java.util.Date
 
 @Composable
@@ -65,7 +66,13 @@ fun BlockedScreen() {
                 items(entries, key = { it.id }) { entry ->
                     ListItem(
                         headlineContent = {
-                            Text(entry.domain, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            // Adult names are never shown, so the app itself never shows adult words.
+                            val name = if (entry.filter == Filter.ADULT) {
+                                stringResource(R.string.adult_site_blocked)
+                            } else {
+                                entry.domain
+                            }
+                            Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         },
                         supportingContent = if (entry.count > 1) {
                             { Text(stringResource(R.string.blocked_times, entry.count)) }

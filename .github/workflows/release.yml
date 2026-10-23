@@ -1,14 +1,16 @@
 name: Release
 
-# Push a version tag (git tag v1.3 && git push origin v1.3) to build the signed APK and AAB
-# and publish them as a GitHub release. Needs the signing key as repository secrets:
-# KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD (see README, "Automatic releases").
+# Push a version tag (git tag v0.3 && git push origin v0.3) to build the signed AAB for the
+# Play Console. The AAB is kept as a workflow artifact (Actions → this run → Artifacts); no APK
+# is published, because the app is distributed through Google Play only. Needs the upload key
+# as repository secrets: KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD
+# (see README, "Automatic releases").
 on:
   push:
     tags: ['v*']
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   release:
@@ -50,33 +52,24 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Unit tests, signed APK and AAB
-        run: ./gradlew testDebugUnitTest assembleRelease bundleRelease
+      - name: Unit tests and signed AAB
+        run: ./gradlew testDebugUnitTest bundleRelease
 
-      - name: Check the signature and name the files
+      - name: Check the signature and name the file
         run: |
-          apk=app/build/outputs/apk/release/app-release.apk
-          if [ ! -f "$apk" ]; then
-            echo "::error::No signed APK was built (only an unsigned one). Check the signing secrets."
+          aab=app/build/outputs/bundle/release/app-release.aab
+          if ! jarsigner -verify "$aab" | grep -q "jar verified"; then
+            echo "::error::The AAB isn't signed. Check the signing secrets."
             exit 1
           fi
-          apksigner=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)
-          "$apksigner" verify --print-certs "$apk"
           mkdir dist
-          cp "$apk" "dist/PrivacyGuard-$GITHUB_REF_NAME.apk"
-          cp app/build/outputs/bundle/release/app-release.aab "dist/PrivacyGuard-$GITHUB_REF_NAME.aab"
+          cp "$aab" "dist/PrivacyGuard-$GITHUB_REF_NAME.aab"
 
-      # Creates the release, or adds the files if a release for this tag already exists
-      # (for example one drafted on GitHub with your own notes).
-      - name: Publish the GitHub release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" dist/* --clobber
-          else
-            gh release create "$GITHUB_REF_NAME" dist/* --title "PrivacyGuard $GITHUB_REF_NAME" --generate-notes
-          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PrivacyGuard-${{ github.ref_name }}
+          path: dist/
+          retention-days: 90
 
       - name: Remove the key from the runner
         if: always()

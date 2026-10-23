@@ -25,7 +25,8 @@ import kotlin.coroutines.resume
  *    which of the network's servers work and handles IPv6 and Private DNS, exactly as the phone
  *    does with the VPN off.
  * 2. After 0.6 s, the network's DNS servers directly, over that network.
- * 3. After 1.2 s, public fallbacks (Cloudflare 1.1.1.1, Google 8.8.8.8).
+ * 3. After 1.2 s, public fallbacks (Cloudflare 1.1.1.1, Google 8.8.8.8), only if the user
+ *    turned them on: they send lookups to a third party, so they are off by default.
  *
  * If a route fails, the later ones start at once. The network is read fresh for every lookup,
  * so a Wi-Fi/mobile data switch can't leave us asking a network that is gone.
@@ -48,6 +49,9 @@ class UpstreamDns(
             InetAddress.getByAddress(byteArrayOf(8, 8, 8, 8)),
         )
     }
+
+    @Volatile
+    var publicFallback = false
 
     /** Last network the callback reported; used only if Android reports no active network. */
     @Volatile
@@ -72,7 +76,7 @@ class UpstreamDns(
                 val start = if (isEmpty()) 0 else SERVERS_AFTER_MS
                 add(Attempt(start, server.hostAddress.orEmpty()) { send(server, query, network) })
             }
-            for (server in FALLBACKS) {
+            if (publicFallback) for (server in FALLBACKS) {
                 val start = if (isEmpty()) 0 else FALLBACK_AFTER_MS
                 add(Attempt(start, "${server.hostAddress} (fallback)") { send(server, query, null) })
             }

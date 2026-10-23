@@ -8,8 +8,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SYSTEM_EXEMPTED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- largeHeap: the merged blocklist has about a million domains (~35 MB packed, see
-         DomainSet), and an update builds the new list while the old one is still in use. -->
+    <!-- largeHeap: with every Pro filter on, the lists hold about 1.3 million domains (~45 MB
+         packed, see DomainSet), and an update builds a new list while the old one is in use. -->
     <application
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -41,6 +41,20 @@
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>
+        </service>
+
+        <service
+            android:name=".vpn.ProtectionTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_shield"
+            android:label="@string/tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+                android:value="true" />
         </service>
     </application>
 
