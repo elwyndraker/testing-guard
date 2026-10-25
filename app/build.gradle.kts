@@ -76,6 +76,7 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.play.app.update)
     implementation(libs.play.billing)
+    implementation(libs.androidx.work.runtime)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     testImplementation(libs.junit)

@@ -26,11 +26,10 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import com.pg.privacyguard.R
 import com.pg.privacyguard.billing.Billing
 import com.pg.privacyguard.data.Blocklist
+import com.pg.privacyguard.data.ListUpdateWorker
 import com.pg.privacyguard.data.Settings
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
-
-private const val WEEK_MS = 7L * 24 * 60 * 60 * 1000
 
 private enum class Tab(@StringRes val label: Int, @DrawableRes val icon: Int) {
     Home(R.string.tab_home, R.drawable.ic_shield),
@@ -50,11 +49,13 @@ fun PrivacyGuardApp() {
 
     LaunchedEffect(Unit) {
         Blocklist.load(context)
-        // Automatic weekly update, and right away when the list of sources has changed
-        // (e.g. after an app update). Failure is fine: the current list keeps working.
+        ListUpdateWorker.schedule(context)
+        // Update when the lists are older than 12 hours (the background update may have been
+        // delayed), and right away when the list of sources has changed (e.g. after an app
+        // update). Failure is fine: the current list keeps working.
         val lastUpdated = Settings.lastUpdated(context).first()
         val sourcesChanged = Settings.sourcesHash(context).first() != Blocklist.sourcesHash
-        if (sourcesChanged || System.currentTimeMillis() - lastUpdated > WEEK_MS) {
+        if (sourcesChanged || System.currentTimeMillis() - lastUpdated > ListUpdateWorker.INTERVAL_MS) {
             try {
                 Blocklist.update(context)
             } catch (e: CancellationException) {

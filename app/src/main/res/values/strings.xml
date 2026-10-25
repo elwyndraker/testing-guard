@@ -41,7 +41,7 @@
     <string name="update_done">Lists updated</string>
     <string name="update_done_partial">Lists updated. %1$d of %2$d sources could not be downloaded; they will be tried again at the next update.</string>
     <string name="update_failed">Update failed: %1$s</string>
-    <string name="auto_update_note">The lists also update automatically when they are older than 7 days.</string>
+    <string name="auto_update_note">The lists also update automatically every 12 hours.</string>
     <string name="filter_standard">Trackers and security</string>
     <string name="filter_standard_detail">Trackers, analytics, phone maker telemetry, malware, phishing and scam sites. Always on.</string>
     <string name="filter_adult">Adult content</string>

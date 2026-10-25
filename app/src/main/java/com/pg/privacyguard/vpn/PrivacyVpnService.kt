@@ -25,6 +25,7 @@ import com.pg.privacyguard.R
 import com.pg.privacyguard.data.BlockedLog
 import com.pg.privacyguard.data.Blocklist
 import com.pg.privacyguard.data.History
+import com.pg.privacyguard.data.ListUpdateWorker
 import com.pg.privacyguard.data.PinLock
 import com.pg.privacyguard.data.Pro
 import com.pg.privacyguard.data.Settings
@@ -188,6 +189,7 @@ class PrivacyVpnService : VpnService() {
         scope.launch {
             // Load the list here too: Android can start this service without the app's screen.
             Blocklist.load(applicationContext)
+            ListUpdateWorker.schedule(applicationContext)
             upstream.publicFallback = Settings.publicDnsFallback(applicationContext).first()
 
             upstream.lastKnownNetwork = connectivity.activeNetwork

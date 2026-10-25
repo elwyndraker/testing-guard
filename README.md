@@ -69,7 +69,7 @@ Pro also adds a PIN lock, your own block and allow rules, and 7 days of blocked 
 | Leaves other apps' and websites' earnings alone: domains on EasyList are removed from every list when it is downloaded | `Blocklist.EXCLUSION_SOURCE` |
 | One switch to turn protection on and off, plus a "blocked today" counter | **Home** screen, and a Quick Settings tile |
 | Live list of blocked domains, newest first; repeats are grouped ("Blocked 4 times"). Adult domains show as "Adult site blocked" | **Blocked** screen |
-| List update on demand, automatically when older than 7 days, and right after an app update that changes the sources | **Filters** screen |
+| List update on demand, automatically every 12 hours in the background (`ListUpdateWorker.kt`), and right after an app update that changes the sources | **Filters** screen |
 | Public DNS fallback (1.1.1.1 / 8.8.8.8), off by default | **Filters** screen |
 | Licences and list credits | **Filters** screen |
 | Works offline on first launch (a copy of the free list ships inside the app) | `app/src/main/assets/standard.txt` |
@@ -366,6 +366,7 @@ app/src/main/
 │   │   ├── DomainSet.kt         memory-saving domain set (packed bytes + hash table)
 │   │   ├── BlockedLog.kt        in-memory list of blocked domains + today's count
 │   │   ├── History.kt           Pro: 7 days of blocked counts, on the phone only
+│   │   ├── ListUpdateWorker.kt  background list update every 12 hours (WorkManager)
 │   │   ├── MyRules.kt           Pro: the user's own block and allow rules
 │   │   ├── PinLock.kt           Pro: PIN lock (salted hash)
 │   │   ├── Pro.kt               whether Pro is unlocked
@@ -378,7 +379,7 @@ app/src/main/
 │   │   ├── PacketUtils.kt       parse IPv4/UDP packets, build answer packets
 │   │   └── DnsUtils.kt          read DNS questions, build NXDOMAIN replies
 │   └── ui/
-│       ├── PrivacyGuardApp.kt   bottom navigation + weekly auto-update
+│       ├── PrivacyGuardApp.kt   bottom navigation + update check on open
 │       ├── HomeScreen.kt        switch, status, counter, permissions flow
 │       ├── BlockedScreen.kt     blocked domains list
 │       ├── FiltersScreen.kt     filters, Update now, DNS fallback, About, credits
